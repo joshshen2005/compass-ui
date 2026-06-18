@@ -813,12 +813,18 @@ class Component extends DCLogic {
     const TENANT_ID = 'common';
     const USE_DEMO_STUDENT_ID = false;
 
+    // 👇 新增:打印完整网址,看看微软回传了什么
+    console.log('[Compass] 完整网址 =', window.location.href);
+    console.log('[Compass] hash =', window.location.hash);
+    console.log('[Compass] search =', window.location.search);
+
     if (!window.msal) {
       console.log('[Compass] msal 未加载');
       this.setState({ authStatus: 'loggedIn' });
       if (this.state.functionKey) this.loadAllData();
       return;
     }
+    // ……下面保持你现在的代码不变……
 
     const redirectUri = window.location.href.split('#')[0].split('?')[0];
     console.log('[Compass] redirectUri =', redirectUri);
@@ -872,7 +878,9 @@ class Component extends DCLogic {
   }
 
   async doLogin() {
+    console.log('[Compass] 点击了登录按钮,准备跳转微软…');  // 👈 新增
     if (!this._pca) {
+      console.log('[Compass] _pca 不存在,直接进入');  // 👈 新增
       this.setState({ authStatus: 'loggedIn' });
       if (this.state.functionKey) this.loadAllData();
       return;
@@ -880,7 +888,7 @@ class Component extends DCLogic {
     try {
       await this._pca.loginRedirect({ scopes: ['User.Read'] });
     } catch (e) {
-      console.error('login error:', e);
+      console.error('[Compass] 登录跳转出错:', e);  // 👈 改成这样
       this.setState({ setupMessage: '登录失败：' + (e.message || e) });
     }
   }
