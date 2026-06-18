@@ -918,19 +918,6 @@ class Component extends DCLogic {
     }
   }
 
-    const claims = account.idTokenClaims || {};
-    const realId = claims.oid || account.username || account.homeAccountId;
-    const studentId = USE_DEMO_STUDENT_ID ? 'demo-student-001' : realId;
-
-    this.writeStored('compass-student-id', studentId);
-    this.setState({
-      studentId,
-      draftStudentId: studentId
-    }, () => {
-      if (this.state.functionKey) this.loadAllData();
-    });
-  }
-
   apiBase() {
     const fallback = 'https://compass-api-wus2-0617-asfgede3bpd8ebe8.westus2-01.azurewebsites.net';
     return String(this.props.apiBaseUrl || fallback).replace(/\/+$/, '');
