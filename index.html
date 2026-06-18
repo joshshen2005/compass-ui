@@ -24,6 +24,26 @@
 </style>
 </helmet>
 
+<sc-if value="{{ showLogin }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:100vh;width:100%;background:#EFEAE0;display:flex;align-items:center;justify-content:center;padding:24px;">
+  <div style="width:100%;max-width:400px;background:#FBF9F3;border:1px solid #E2DBCB;border-radius:24px;padding:44px 38px;text-align:center;box-shadow:0 30px 80px -46px rgba(30,60,42,.55);">
+    <svg width="42" height="42" viewBox="0 0 100 100" fill="none" style="margin-bottom:18px;">
+      <circle cx="50" cy="50" r="44" stroke="#15795A" stroke-width="4"></circle>
+      <polygon points="50,20 60,50 50,46 40,50" fill="#15795A"></polygon>
+      <polygon points="50,80 60,50 50,54 40,50" fill="#BE6A42"></polygon>
+      <circle cx="50" cy="50" r="5" fill="#FBF9F3"></circle>
+    </svg>
+    <h1 style="font-family:'Newsreader',serif;font-weight:400;font-size:32px;margin:0 0 8px;color:#211E18;">Welcome to Compass</h1>
+    <p style="font-size:14.5px;color:#79715f;margin:0 0 28px;line-height:1.55;">Sign in with your Microsoft account to continue to your workspace.</p>
+    <button onClick="{{ doLogin }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:9px;padding:14px;border:none;border-radius:13px;background:#15795A;color:#fff;font-family:'Hanken Grotesk';font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 14px 30px -18px rgba(21,121,90,.9);">
+      Sign in with Microsoft
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M12 6l6 6-6 6"></path></svg>
+    </button>
+    <div style="min-height:18px;margin-top:12px;font-size:12.5px;color:#BE6A42;">{{ setupMessage }}</div>
+  </div>
+</div>
+</sc-if>
+
 <sc-if value="{{ needsAgentSetup }}" hint-placeholder-val="{{ false }}">
 <div style="min-height:100vh;width:100%;background:#EFEAE0;color:#211E18;display:grid;grid-template-columns:minmax(360px,440px) minmax(0,1fr);">
   <section style="padding:54px 42px;display:flex;flex-direction:column;justify-content:center;background:#F4F0E6;border-right:1px solid #E2DBCB;">
@@ -145,6 +165,10 @@
         <div style="font-size:13.5px;font-weight:600;color:#211E18;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ studentName }}</div>
         <div style="font-size:11.5px;color:#9a9079;">View profile</div>
       </div>
+    </button>
+    <button onClick="{{ doLogout }}" style="margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px 12px;border:1px solid #E2DBCB;border-radius:13px;background:#FBF9F3;color:#BE6A42;font-family:'Hanken Grotesk';font-size:13px;font-weight:600;cursor:pointer;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
+      Sign out
     </button>
   </aside>
 
@@ -758,6 +782,7 @@ class Component extends DCLogic {
 
   state = {
     agentConnected: true,
+    authStatus: 'checking',
     studentId: this.readStored('compass-student-id', 'demo-student-001'),
     functionKey: this.readFunctionKey(),
     draftStudentId: this.readStored('compass-student-id', 'demo-student-001'),
@@ -786,15 +811,16 @@ class Component extends DCLogic {
   async initMicrosoftLogin() {
     const CLIENT_ID = '786d2a41-be52-4051-aaef-176f7d87daa6';
     const TENANT_ID = 'd3a01b20-c7ed-451f-a648-b55f5b479a41';
-    // demo 阶段 true：登录后仍看示例数据；以后正式用改成 false
     const USE_DEMO_STUDENT_ID = false;
 
     if (!window.msal) {
+      // 没有 msal 库（如被拦截），直接进入
+      this.setState({ authStatus: 'loggedIn' });
       if (this.state.functionKey) this.loadAllData();
       return;
     }
 
-        const pca = new window.msal.PublicClientApplication({
+    const pca = new window.msal.PublicClientApplication({
       auth: {
         clientId: CLIENT_ID,
         authority: 'https://login.microsoftonline.com/' + TENANT_ID,
@@ -804,19 +830,93 @@ class Component extends DCLogic {
     });
 
     if (pca.initialize) { try { await pca.initialize(); } catch (e) {} }
+    this._pca = pca;   // 存起来给登录/登出按钮用
 
     let account = null;
     try {
       const result = await pca.handleRedirectPromise();
       account = (result && result.account) || pca.getAllAccounts()[0] || null;
     } catch (e) {
+      console.error('handleRedirect error:', e);
       account = pca.getAllAccounts()[0] || null;
     }
 
     if (!account) {
-      try { await pca.loginRedirect({ scopes: ['User.Read'] }); } catch (e) {}
+      // 👇 不再自动跳转，显示登录按钮
+      this.setState({ authStatus: 'needsLogin' });
       return;
     }
+
+    this.onLoginSuccess(account, USE_DEMO_STUDENT_ID);
+  }
+
+  onLoginSuccess(account, useDemo) {
+    const claims = account.idTokenClaims || {};
+    const realId = claims.oid || account.username || account.homeAccountId;
+    const studentId = useDemo ? 'demo-student-001' : realId;
+
+    this.writeStored('compass-student-id', studentId);
+    this.setState({
+      studentId,
+      draftStudentId: studentId,
+      authStatus: 'loggedIn'
+    }, () => {
+      if (this.state.functionKey) this.loadAllData();
+    });
+  }
+
+  async doLogin() {
+    if (!this._pca) {
+      this.setState({ authStatus: 'loggedIn' });
+      if (this.state.functionKey) this.loadAllData();
+      return;
+    }
+    try {
+      await this._pca.loginRedirect({ scopes: ['User.Read'] });
+    } catch (e) {
+      console.error('login error:', e);
+      this.setState({ setupMessage: '登录失败：' + (e.message || e) });
+    }
+  }
+
+  async doLogout() {
+    // 1. 清本地缓存的学生 ID
+    this.removeStored('compass-student-id');
+
+    // 2. 清空界面上所有数据，回到登录页
+    this.setState({
+      authStatus: 'needsLogin',
+      studentId: '',
+      draftStudentId: '',
+      setupMessage: '',
+      documentUploadMessage: '',
+      apiError: '',
+      dataSource: 'demo',
+      page: 'home',
+      agentOpen: false,
+      editing: false,
+      draft: {},
+      profile: { id:'', studentId:'', name:'', year:'', major:'', school:'', goal:'', track:'', location:'', completenessPct:0 },
+      planItems: [],
+      documents: [],
+      calendarEvents: [],
+      nextDeadline: null,
+      todos: []
+    });
+
+    // 3. 真正登出微软账户
+    if (this._pca) {
+      try {
+        const account = this._pca.getAllAccounts()[0];
+        await this._pca.logoutRedirect({
+          account,
+          postLogoutRedirectUri: window.location.href.split('#')[0].split('?')[0]
+        });
+      } catch (e) {
+        console.error('logout error:', e);
+      }
+    }
+  }
 
     const claims = account.idTokenClaims || {};
     const realId = claims.oid || account.username || account.homeAccountId;
@@ -1246,7 +1346,10 @@ class Component extends DCLogic {
     return {
       page,
       needsAgentSetup: false,
-      appReady: true,
+      appReady: this.state.authStatus === 'loggedIn',
+      showLogin: this.state.authStatus === 'needsLogin',
+      doLogin: () => this.doLogin(),
+      doLogout: () => this.doLogout(),
       isHome: page === 'home', isProfile: page === 'profile', isNews: page === 'news', isTodo: page === 'todo', isCalendar: page === 'calendar',
       goHome: this.nav('home'), goProfile: this.nav('profile'), goNews: this.nav('news'), goTodo: this.nav('todo'), goCalendar: this.nav('calendar'),
       navHome: ns('home'), navProfile: ns('profile'), navNews: ns('news'), navTodo: ns('todo'), navCalendar: ns('calendar'),
