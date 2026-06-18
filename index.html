@@ -794,10 +794,10 @@ class Component extends DCLogic {
       return;
     }
 
-    const pca = new window.msal.PublicClientApplication({
+        const pca = new window.msal.PublicClientApplication({
       auth: {
-        clientId: '786d2a41-be52-4051-aaef-176f7d87daa6',
-        authority: 'https://login.microsoftonline.com/' + 'd3a01b20-c7ed-451f-a648-b55f5b479a41',
+        clientId: CLIENT_ID,
+        authority: 'https://login.microsoftonline.com/' + TENANT_ID,
         redirectUri: window.location.href.split('#')[0].split('?')[0]
       },
       cache: { cacheLocation: 'localStorage' }
