@@ -814,39 +814,45 @@ class Component extends DCLogic {
     const USE_DEMO_STUDENT_ID = false;
 
     if (!window.msal) {
-      // 没有 msal 库（如被拦截），直接进入
+      console.log('[Compass] msal 未加载');
       this.setState({ authStatus: 'loggedIn' });
       if (this.state.functionKey) this.loadAllData();
       return;
     }
 
+    const redirectUri = window.location.href.split('#')[0].split('?')[0];
+    console.log('[Compass] redirectUri =', redirectUri);
+
     const pca = new window.msal.PublicClientApplication({
       auth: {
         clientId: CLIENT_ID,
         authority: 'https://login.microsoftonline.com/' + TENANT_ID,
-        redirectUri: window.location.href.split('#')[0].split('?')[0]
+        redirectUri: redirectUri
       },
       cache: { cacheLocation: 'localStorage' }
     });
 
     if (pca.initialize) { try { await pca.initialize(); } catch (e) {} }
-    this._pca = pca;   // 存起来给登录/登出按钮用
+    this._pca = pca;
 
     let account = null;
     try {
       const result = await pca.handleRedirectPromise();
+      console.log('[Compass] handleRedirectPromise 返回:', result);
+      console.log('[Compass] 账户数量:', pca.getAllAccounts().length, pca.getAllAccounts());
       account = (result && result.account) || pca.getAllAccounts()[0] || null;
     } catch (e) {
-      console.error('handleRedirect error:', e);
+      console.error('[Compass] handleRedirect 出错:', e);
       account = pca.getAllAccounts()[0] || null;
     }
 
     if (!account) {
-      // 👇 不再自动跳转，显示登录按钮
+      console.log('[Compass] 没找到账户 → 回登录页');
       this.setState({ authStatus: 'needsLogin' });
       return;
     }
 
+    console.log('[Compass] 登录成功:', account.username);
     this.onLoginSuccess(account, USE_DEMO_STUDENT_ID);
   }
 
