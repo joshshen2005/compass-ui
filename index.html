@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:#EFEAE0;font-family:'Hanken Grotesk',sans-serif;}
+  ::-webkit-scrollbar{width:11px;height:11px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:#dcd4c1;border-radius:99px;border:3px solid #EFEAE0;}
+  @keyframes haloPulse{0%,100%{transform:scale(1);opacity:.5;}50%{transform:scale(1.14);opacity:.82;}}
+  @keyframes floaty{0%,100%{transform:translateY(0);}50%{transform:translateY(-9px);}}
+</style>
+</helmet>
+
+<sc-if value="{{ needsAgentSetup }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:100vh;width:100%;background:#EFEAE0;color:#211E18;display:grid;grid-template-columns:minmax(360px,440px) minmax(0,1fr);">
+  <section style="padding:54px 42px;display:flex;flex-direction:column;justify-content:center;background:#F4F0E6;border-right:1px solid #E2DBCB;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:34px;">
+      <svg width="34" height="34" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="44" stroke="#15795A" stroke-width="4"></circle>
+        <polygon points="50,20 60,50 50,46 40,50" fill="#15795A"></polygon>
+        <polygon points="50,80 60,50 50,54 40,50" fill="#BE6A42"></polygon>
+        <circle cx="50" cy="50" r="5" fill="#F4F0E6"></circle>
+      </svg>
+      <span style="font-family:'Newsreader',serif;font-style:italic;font-size:29px;font-weight:500;color:#211E18;letter-spacing:.01em;">Compass</span>
+    </div>
+
+    <div style="font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:#a59c84;font-weight:700;margin-bottom:12px;">Agent connection</div>
+    <h1 style="font-family:'Newsreader',serif;font-weight:400;font-size:43px;line-height:1.04;margin:0;color:#211E18;">Connect your Compass agent first.</h1>
+    <p style="font-size:15.5px;color:#79715f;line-height:1.58;margin:17px 0 0;">Finish the Copilot connection on the right, then enter the workspace. This keeps the agent session from being rebuilt while you move through the student pages.</p>
+
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:28px;">
+      <div style="display:flex;gap:11px;align-items:flex-start;padding:13px 14px;border:1px solid #E2DBCB;border-radius:14px;background:#FBF9F3;">
+        <span style="width:22px;height:22px;border-radius:50%;background:#E7EFE4;color:#15795A;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex:none;">1</span>
+        <span style="font-size:14px;line-height:1.45;color:#5d5547;">Set up the Copilot connection when prompted.</span>
+      </div>
+      <div style="display:flex;gap:11px;align-items:flex-start;padding:13px 14px;border:1px solid #E2DBCB;border-radius:14px;background:#FBF9F3;">
+        <span style="width:22px;height:22px;border-radius:50%;background:#E7EFE4;color:#15795A;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex:none;">2</span>
+        <span style="font-size:14px;line-height:1.45;color:#5d5547;">Use the Azure Function key as the connection credential.</span>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;margin-top:28px;">
+      <label style="display:block;">
+        <span style="display:block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9a9079;margin-bottom:7px;">Student ID</span>
+        <input value="{{ draftStudentId }}" onChange="{{ setDraftStudentId }}" style="width:100%;padding:12px 13px;border:1px solid #d8d0bd;border-radius:11px;background:#fff;font-family:'Hanken Grotesk';font-size:14.5px;color:#211E18;outline:none;" style-focus="border-color:#15795A;box-shadow:0 0 0 3px rgba(21,121,90,.13);" />
+      </label>
+      <label style="display:block;">
+        <span style="display:block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9a9079;margin-bottom:7px;">Azure Function key</span>
+        <input type="password" value="{{ draftFunctionKey }}" onChange="{{ setDraftFunctionKey }}" style="width:100%;padding:12px 13px;border:1px solid #d8d0bd;border-radius:11px;background:#fff;font-family:'Hanken Grotesk';font-size:14.5px;color:#211E18;outline:none;" style-focus="border-color:#15795A;box-shadow:0 0 0 3px rgba(21,121,90,.13);" />
+      </label>
+    </div>
+
+    <button onClick="{{ saveWorkspaceSetup }}" style="margin-top:24px;width:100%;display:flex;align-items:center;justify-content:center;gap:9px;padding:14px 18px;border:none;border-radius:14px;background:#15795A;color:#fff;font-family:'Hanken Grotesk';font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 14px 30px -18px rgba(21,121,90,.9);">
+      Enter workspace
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M12 6l6 6-6 6"></path></svg>
+    </button>
+    <div style="min-height:18px;margin-top:10px;font-size:12.5px;color:#BE6A42;">{{ setupMessage }}</div>
+  </section>
+
+  <section style="padding:34px;min-width:0;height:100vh;">
+    <div style="position:relative;width:100%;height:100%;border-radius:28px;overflow:hidden;background:linear-gradient(158deg,#FBF9F3,#F0ECE0);border:1px solid #E2DBCB;box-shadow:0 30px 80px -46px rgba(30,60,42,.55);">
+      <div style="position:absolute;top:20px;left:24px;display:flex;align-items:center;gap:9px;z-index:3;">
+        <span style="width:9px;height:9px;border-radius:50%;background:#2EA66F;box-shadow:0 0 0 4px rgba(46,166,111,.18);"></span>
+        <span style="font-size:13px;font-weight:600;color:#6f6755;letter-spacing:.02em;">Compass Agent · connection setup</span>
+      </div>
+      <iframe src="{{ agentUrl }}" frameborder="0" style="position:absolute;inset:54px 0 0 0;width:100%;height:calc(100% - 54px);border:none;" allow="microphone; clipboard-write"></iframe>
+    </div>
+  </section>
+</div>
+</sc-if>
+
+<sc-if value="{{ appReady }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;min-height:100vh;width:100%;background:#EFEAE0;color:#211E18;">
+
+  <aside style="width:262px;flex:none;height:100vh;position:sticky;top:0;padding:26px 18px 22px;display:flex;flex-direction:column;background:#F4F0E6;border-right:1px solid #E2DBCB;">
+    <div style="display:flex;align-items:center;gap:11px;padding:4px 10px 26px;">
+      <svg width="30" height="30" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="44" stroke="#15795A" stroke-width="4"></circle>
+        <polygon points="50,20 60,50 50,46 40,50" fill="#15795A"></polygon>
+        <polygon points="50,80 60,50 50,54 40,50" fill="#BE6A42"></polygon>
+        <circle cx="50" cy="50" r="5" fill="#F4F0E6"></circle>
+      </svg>
+      <span style="font-family:'Newsreader',serif;font-style:italic;font-size:25px;font-weight:500;color:#211E18;letter-spacing:.01em;">Compass</span>
+    </div>
+
+    <div style="font-family:'Hanken Grotesk';font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#b0a78f;padding:0 14px 10px;">Navigate</div>
+    <nav style="display:flex;flex-direction:column;gap:4px;">
+      <button style="{{ navHome }}" onClick="{{ goHome }}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V20h14V9.5"></path><path d="M9.5 20v-6h5v6"></path></svg>
+        <span>Home</span>
+      </button>
+      <button style="{{ navProfile }}" onClick="{{ goProfile }}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"></circle><path d="M5 19.5c.7-3.6 3.4-5.5 7-5.5s6.3 1.9 7 5.5"></path></svg>
+        <span>Profile</span>
+      </button>
+      <button style="{{ navNews }}" onClick="{{ goNews }}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="13.5" height="14" rx="2"></rect><path d="M17 8.5h2.5A1.5 1.5 0 0 1 21 10v7a2 2 0 0 1-2 2H6"></path><path d="M7 9h6.5M7 12.5h6.5M7 16h4"></path></svg>
+        <span>Future Plan</span>
+      </button>
+      <button style="{{ navTodo }}" onClick="{{ goTodo }}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6h10M10 12h10M10 18h10"></path><path d="M3.5 5.5l1.4 1.4L7.5 4.3"></path><path d="M3.5 11.5l1.4 1.4L7.5 10.3"></path><circle cx="5" cy="18" r="1.5"></circle></svg>
+        <span>To-Do</span>
+      </button>
+      <button style="{{ navCalendar }}" onClick="{{ goCalendar }}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"></rect><path d="M3.5 9.5h17M8 3.5v4M16 3.5v4"></path></svg>
+        <span>Calendar</span>
+      </button>
+    </nav>
+
+    <div style="margin-top:18px;padding:14px;border:1px solid #E2DBCB;border-radius:16px;background:#FBF9F3;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;">
+        <span style="font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#9a9079;">API Sync</span>
+        <span style="{{ apiStatusStyle }}">{{ apiStatusLabel }}</span>
+      </div>
+      <label style="display:block;margin-bottom:10px;">
+        <span style="display:block;font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#b0a78f;margin-bottom:5px;">Student ID</span>
+        <input value="{{ draftStudentId }}" onChange="{{ setDraftStudentId }}" style="width:100%;padding:9px 10px;border:1px solid #d8d0bd;border-radius:10px;background:#fff;font-family:'Hanken Grotesk';font-size:12.5px;color:#211E18;outline:none;" />
+      </label>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px;padding:9px 10px;border:1px solid #e3dccb;border-radius:10px;background:#fff;">
+        <span style="font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#b0a78f;">Function key</span>
+        <span style="font-size:11.5px;font-weight:700;color:#15795A;white-space:nowrap;">Built in for testing</span>
+      </div>
+      <button onClick="{{ saveWorkspaceSetup }}" style="width:100%;padding:10px 12px;border:none;border-radius:11px;background:#15795A;color:#fff;font-family:'Hanken Grotesk';font-size:12.5px;font-weight:800;cursor:pointer;">Refresh Cosmos data</button>
+      <div style="min-height:16px;margin-top:8px;font-size:11.5px;line-height:1.3;color:#BE6A42;">{{ setupMessage }}</div>
+    </div>
+
+    <div style="flex:1;"></div>
+
+    <button onClick="{{ goProfile }}" style="display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;border:1px solid #E2DBCB;border-radius:15px;background:#FBF9F3;cursor:pointer;text-align:left;">
+      <div style="width:38px;height:38px;flex:none;border-radius:50%;background:#15795A;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Hanken Grotesk';font-weight:700;font-size:14px;letter-spacing:.02em;">{{ initials }}</div>
+      <div style="min-width:0;flex:1;">
+        <div style="font-size:13.5px;font-weight:600;color:#211E18;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ studentName }}</div>
+        <div style="font-size:11.5px;color:#9a9079;">View profile</div>
+      </div>
+    </button>
+  </aside>
+
+  <main style="flex:1;min-width:0;height:100vh;overflow-y:auto;">
+
+    <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+    <div data-screen-label="Home" style="padding:34px 42px 44px;max-width:1480px;margin:0 auto;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:26px;">
+        <div>
+          <div style="font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:#a59c84;font-weight:700;margin-bottom:9px;">{{ todayLabel }}</div>
+          <h1 style="font-family:'Newsreader',serif;font-weight:400;font-size:44px;line-height:1.04;margin:0;color:#211E18;">Good morning, <em style="font-style:italic;color:#15795A;">{{ firstName }}</em>.</h1>
+          <p style="font-size:16px;color:#79715f;margin:11px 0 0;max-width:540px;line-height:1.5;">Here's where you stand and what comes next. Ask your Compass agent anything about your path — internships, applications, or your next move.</p>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) 348px;gap:24px;align-items:start;">
+
+        <div style="min-height:618px;border-radius:28px;background:linear-gradient(158deg,#FBF9F3,#F0ECE0);border:1px solid #E2DBCB;box-shadow:0 30px 70px -42px rgba(30,60,42,.5);padding:24px;display:flex;flex-direction:column;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:22px;">
+            <div>
+              <div style="font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:#a59c84;font-weight:700;margin-bottom:9px;">Live from Cosmos DB</div>
+              <h2 style="font-family:'Newsreader',serif;font-weight:500;font-size:30px;line-height:1.05;margin:0;color:#211E18;">Your current plan</h2>
+            </div>
+            <button onClick="{{ refreshData }}" style="border:1px solid #D8D0BD;background:#fff;color:#15795A;border-radius:11px;padding:9px 13px;font-family:'Hanken Grotesk';font-size:12.5px;font-weight:700;cursor:pointer;">Refresh</button>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:13px;">
+            <sc-for list="{{ homePlanItems }}" as="item" hint-placeholder-count="4">
+              <article style="display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid #ece5d5;border-radius:17px;padding:16px;">
+                <span style="{{ item.dotStyle }}"></span>
+                <div style="min-width:0;flex:1;">
+                  <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:5px;">
+                    <h3 style="font-size:16px;line-height:1.25;margin:0;color:#211E18;">{{ item.title }}</h3>
+                    <span style="{{ item.badgeStyle }}">{{ item.categoryLabel }}</span>
+                  </div>
+                  <p style="font-size:13.5px;color:#79715f;line-height:1.5;margin:0;">{{ item.description }}</p>
+                  <div style="font-size:11.5px;color:#a59c84;margin-top:8px;">{{ item.meta }}</div>
+                </div>
+              </article>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ noPlanItems }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;text-align:center;border:1px dashed #D8D0BD;border-radius:18px;color:#9a9079;font-size:14px;line-height:1.5;padding:34px;">No future plan items yet.</div>
+          </sc-if>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:18px;">
+
+          <div style="background:linear-gradient(160deg,#15795A,#0f5e44);border-radius:20px;padding:20px 20px 18px;color:#fff;box-shadow:0 18px 40px -26px rgba(21,121,90,.9);">
+            <div style="font-size:11.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;opacity:.72;margin-bottom:10px;">Next deadline</div>
+            <div style="font-family:'Newsreader',serif;font-size:23px;line-height:1.18;margin-bottom:6px;">{{ nextDeadline.title }}</div>
+            <div style="font-size:13.5px;opacity:.82;">{{ nextDeadline.detail }}</div>
+            <button onClick="{{ goTodo }}" style="margin-top:15px;display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border:none;border-radius:10px;background:rgba(255,255,255,.16);color:#fff;font-family:'Hanken Grotesk';font-size:13px;font-weight:600;cursor:pointer;">View in plan
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M12 6l6 6-6 6"></path></svg>
+            </button>
+          </div>
+
+          <div style="background:#FBF9F3;border:1px solid #E2DBCB;border-radius:20px;padding:19px 19px 8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+              <span style="font-size:14.5px;font-weight:700;color:#211E18;">From your agent</span>
+              <button onClick="{{ goNews }}" style="border:none;background:none;color:#15795A;font-family:'Hanken Grotesk';font-size:12.5px;font-weight:600;cursor:pointer;">View all</button>
+            </div>
+            <div style="display:flex;flex-direction:column;">
+              <sc-for list="{{ agentHighlights }}" as="h" hint-placeholder-count="2">
+                <div style="display:flex;gap:12px;padding:13px 0;border-bottom:1px solid #ece5d5;">
+                  <span style="{{ h.dotStyle }}"></span>
+                  <div><div style="font-size:14px;color:#2c2820;line-height:1.35;">{{ h.title }}</div><div style="font-size:11.5px;color:#a59c84;margin-top:3px;">{{ h.meta }}</div></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="background:#FBF9F3;border:1px solid #E2DBCB;border-radius:20px;padding:19px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;">
+              <span style="font-size:14.5px;font-weight:700;color:#211E18;">Plan progress</span>
+              <button onClick="{{ goTodo }}" style="border:none;background:none;color:#15795A;font-family:'Hanken Grotesk';font-size:12.5px;font-weight:600;cursor:pointer;">Open To-Do</button>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px;">
+              <span style="font-family:'Newsreader',serif;font-size:30px;color:#15795A;">{{ doneCount }}</span>
+              <span style="font-size:14px;color:#9a9079;">of {{ totalCount }} steps done</span>
+            </div>
+            <div style="height:9px;background:#e7e0d0;border-radius:99px;overflow:hidden;"><div style="{{ barStyle }}"></div></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Profile" style="padding:34px 42px 44px;max-width:1340px;margin:0 auto;">
+
+      <sc-if value="{{ editing }}" hint-placeholder-val="{{ false }}">
+        <div style="position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(33,30,24,.46);">
+          <div style="width:100%;max-width:540px;max-height:88vh;overflow-y:auto;background:#FBF9F3;border:1px solid #E2DBCB;border-radius:24px;padding:30px;box-shadow:0 50px 110px -28px rgba(0,0,0,.55);">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;">
+              <div>
+                <h2 style="font-family:'Newsreader',serif;font-weight:500;font-size:27px;margin:0;color:#211E18;">Edit profile</h2>
+                <p style="font-size:13.5px;color:#79715f;margin:6px 0 0;">Confirm and update your information. Your Compass agent uses this to personalise your plan.</p>
+              </div>
+              <button onClick="{{ cancelEdit }}" style="width:36px;height:36px;flex:none;border:none;border-radius:11px;background:#efe9dc;color:#79715f;font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;">×</button>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:16px;">
+              <label style="display:block;">
+                <span style="display:block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9a9079;margin-bottom:7px;">Full name</span>
+                <input value="{{ draft.name }}" onChange="{{ fName }}" style="width:100%;padding:12px 13px;border:1px solid #d8d0bd;border-radius:11px;background:#fff;font-family:'Hanken Grotesk';font-size:14.5px;color:#211E18;outline:none;" style-focus="border-color:#15795A;box-shadow:0 0 0 3px rgba(21,121,90,.13);" />
+              </label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <label style="display:block;">
+                  <span style="display:block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9a9079;margin-bottom:7px;">Year</span>
+                  <input value="{{ draft.year }}" onChange="{{ fYear }}" style="width:100%;padding:12px 13px;border:1px solid #d8d0bd;border-radius:11px;background:#fff;font-family:'Hanken Grotesk';font-size:14.5px;color:#211E18;outline:none;" style-focus="border-color:#15795A;box-shadow:0 0 0 3px rgba(21,121,90,.13);" />
+                </label>
+                <label style="display:block;">
+                  <span style="display:block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9a9079;margin-bottom:7px;">School</span>
+                  <input value="{{ draft.school }}" onChange="{{ fSchool }}" style="width:100%;padding:12px 13px;border:1px solid #d8d0bd;border-radius:11px;background:#fff;font-family:'Hanken Grotesk';font-size:14.5px;color:#211E18;outline:none;" style-focus="border-color:#15795A;box-shadow:0 0 0 3px rgba(21,121,90,.13);" />
+                </label>
+              </div>
+              <label style="display:block;">
+                <span style="display:block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9a9079;margin-bottom:7px;">Major</span>
+                <input value="{{ draft.major }}" onChange="{{ fMajor }}" style="width:100%;padding:12px 13px;border:1px solid #d8d0bd;border-radius:11px;background:#fff;font-family:'Hanken Grotesk';font-size:14.5px;color:#211E18;outline:none;" style-focus="border-color:#15795A;box-shadow:0 0 0 3px rgba(21,121,90,.13);" />
+              </label>
+              <label style="display:block;">
+                <span style="display:block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9a9079;margin-bottom:7px;">Goal</span>
+                <input value="{{ draft.goal }}" onChange="{{ fGoal }}" style="width:100%;padding:12px 13px;border:1px solid #d8d0bd;border-radius:11px;background:#fff;font-family:'Hanken Grotesk';font-size:14.5px;color:#211E18;outline:none;" style-focus="border-color:#15795A;box-shadow:0 0 0 3px rgba(21,121,90,.13);" />
+              </label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <label style="display:block;">
+                  <span style="display:block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9a9079;margin-bottom:7px;">Track</span>
+                  <input value="{{ draft.track }}" onChange="{{ fTrack }}" style="width:100%;padding:12px 13px;border:1px solid #d8d0bd;border-radius:11px;background:#fff;font-family:'Hanken Grotesk';font-size:14.5px;color:#211E18;outline:none;" style-focus="border-color:#15795A;box-shadow:0 0 0 3px rgba(21,121,90,.13);" />
+                </label>
+                <label style="display:block;">
+                  <span style="display:block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9a9079;margin-bottom:7px;">Location</span>
+                  <input value="{{ draft.location }}" onChange="{{ fLocation }}" style="width:100%;padding:12px 13px;border:1px solid #d8d0bd;border-radius:11px;background:#fff;font-family:'Hanken Grotesk';font-size:14.5px;color:#211E18;outline:none;" style-focus="border-color:#15795A;box-shadow:0 0 0 3px rgba(21,121,90,.13);" />
+                </label>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:28px;">
+              <button onClick="{{ cancelEdit }}" style="padding:12px 22px;border:1px solid #d8d0bd;border-radius:12px;background:#fff;color:#79715f;font-family:'Hanken Grotesk';font-size:14px;font-weight:600;cursor:pointer;">Cancel</button>
+              <button onClick="{{ saveEdit }}" style="padding:12px 24px;border:none;border-radius:12px;background:#15795A;color:#fff;font-family:'Hanken Grotesk';font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 12px 26px -16px rgba(21,121,90,.9);">Save changes</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <div style="margin-bottom:26px;">
+        <div style="font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:#a59c84;font-weight:700;margin-bottom:9px;">Your account</div>
+        <h1 style="font-family:'Newsreader',serif;font-weight:400;font-size:40px;line-height:1;margin:0;color:#211E18;">Student profile</h1>
+      </div>
+
+      <div style="display:grid;grid-template-columns:330px minmax(0,1fr);gap:26px;align-items:start;">
+
+        <div style="background:#FBF9F3;border:1px solid #E2DBCB;border-radius:22px;padding:26px 24px;box-shadow:0 18px 44px -34px rgba(40,50,30,.5);">
+          <div style="display:flex;flex-direction:column;align-items:center;text-align:center;">
+            <div style="width:92px;height:92px;border-radius:50%;background:#15795A;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Hanken Grotesk';font-weight:700;font-size:32px;letter-spacing:.02em;">{{ initials }}</div>
+            <div style="font-family:'Newsreader',serif;font-size:27px;color:#211E18;line-height:1.1;margin-top:15px;">{{ profile.name }}</div>
+            <div style="display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:6px 14px;border-radius:99px;background:#E7EFE4;color:#15795A;font-size:12.5px;font-weight:700;letter-spacing:.01em;">{{ profile.year }}</div>
+          </div>
+
+          <div style="height:1px;background:#ece5d5;margin:22px 0;"></div>
+
+          <div style="display:flex;flex-direction:column;gap:17px;">
+            <div>
+              <div style="font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:#b0a78f;margin-bottom:5px;">Major</div>
+              <div style="font-size:17.5px;font-weight:600;color:#211E18;line-height:1.25;">{{ profile.major }}</div>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:#b0a78f;margin-bottom:5px;">School</div>
+              <div style="font-size:17.5px;font-weight:600;color:#211E18;line-height:1.25;">{{ profile.school }}</div>
+            </div>
+          </div>
+
+          <div style="height:1px;background:#ece5d5;margin:22px 0;"></div>
+
+          <div style="display:flex;flex-direction:column;gap:13px;">
+            <div style="display:flex;justify-content:space-between;gap:14px;font-size:13.5px;"><span style="color:#9a9079;flex:none;">Goal</span><span style="color:#2c2820;font-weight:600;text-align:right;">{{ profile.goal }}</span></div>
+            <div style="display:flex;justify-content:space-between;gap:14px;font-size:13.5px;"><span style="color:#9a9079;flex:none;">Track</span><span style="color:#2c2820;font-weight:600;text-align:right;">{{ profile.track }}</span></div>
+            <div style="display:flex;justify-content:space-between;gap:14px;font-size:13.5px;"><span style="color:#9a9079;flex:none;">Location</span><span style="color:#2c2820;font-weight:600;text-align:right;">{{ profile.location }}</span></div>
+          </div>
+
+          <div style="margin:22px 0 6px;">
+            <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:8px;"><span style="color:#9a9079;font-weight:600;">Profile completeness</span><span style="color:#15795A;font-weight:700;">{{ profileCompleteness }}%</span></div>
+            <div style="height:8px;background:#e7e0d0;border-radius:99px;overflow:hidden;"><div style="{{ profileCompletenessStyle }}"></div></div>
+          </div>
+
+          <button onClick="{{ startEdit }}" style="margin-top:20px;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border:none;border-radius:13px;background:#15795A;color:#fff;font-family:'Hanken Grotesk';font-size:14.5px;font-weight:600;cursor:pointer;box-shadow:0 12px 26px -16px rgba(21,121,90,.9);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+            Edit profile
+          </button>
+        </div>
+
+        <div>
+          <div style="margin-bottom:8px;">
+            <h2 style="font-family:'Newsreader',serif;font-weight:500;font-size:24px;margin:0;color:#211E18;">Documents</h2>
+            <p style="font-size:14px;color:#79715f;margin:6px 0 0;">Document records are saved to Cosmos DB. Full file upload and text reading come next.</p>
+          </div>
+
+          <div onDragOver="{{ handleDocumentDragOver }}" onDrop="{{ handleDocumentDrop }}" style="position:relative;border:2px dashed #cdc6b2;border-radius:20px;padding:32px;text-align:center;background:#FBF9F3;margin:18px 0 10px;cursor:pointer;overflow:hidden;">
+            <div style="width:54px;height:54px;border-radius:50%;background:#E7EFE4;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#15795A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"></path><path d="M5 16v3a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3"></path></svg>
+            </div>
+            <div style="font-size:15.5px;color:#2c2820;font-weight:600;">Drop files here, or <span style="color:#15795A;text-decoration:underline;">browse</span></div>
+            <div style="font-size:12.5px;color:#a59c84;margin-top:6px;">PDF, DOCX, PNG · up to 25 MB each</div>
+            <input type="file" multiple accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.txt" onChange="{{ recordSelectedDocuments }}" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;" />
+          </div>
+          <div style="min-height:18px;margin:0 0 18px;font-size:12.5px;color:#BE6A42;">{{ documentUploadMessage }}</div>
+
+          <div style="display:flex;flex-direction:column;gap:11px;">
+            <sc-for list="{{ documentRows }}" as="doc" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:15px;padding:15px 17px;background:#FBF9F3;border:1px solid #E2DBCB;border-radius:15px;">
+                <div style="{{ doc.typeStyle }}">{{ doc.typeLabel }}</div>
+                <div style="flex:1;min-width:0;"><div style="font-size:14.5px;font-weight:600;color:#211E18;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ doc.name }}</div><div style="font-size:12px;color:#a59c84;margin-top:2px;">{{ doc.meta }}</div></div>
+                <span style="{{ doc.statusStyle }}">{{ doc.statusLabel }}</span>
+              </div>
+            </sc-for>
+
+            <sc-if value="{{ noDocuments }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:24px;text-align:center;border:1px dashed #D8D0BD;border-radius:16px;background:#FBF9F3;color:#9a9079;font-size:14px;">No documents recorded yet.</div>
+            </sc-if>
+
+            <sc-if value="{{ showDemoDocuments }}" hint-placeholder-val="{{ false }}">
+
+            <div style="display:flex;align-items:center;gap:15px;padding:15px 17px;background:#FBF9F3;border:1px solid #E2DBCB;border-radius:15px;">
+              <div style="width:42px;height:42px;flex:none;border-radius:11px;background:#F3E3D9;color:#BE6A42;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;letter-spacing:.04em;">PDF</div>
+              <div style="flex:1;min-width:0;"><div style="font-size:14.5px;font-weight:600;color:#211E18;">Resume_2026.pdf</div><div style="font-size:12px;color:#a59c84;margin-top:2px;">210 KB · Uploaded Jun 12</div></div>
+              <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#15795A;background:#E7EFE4;padding:5px 11px;border-radius:99px;">Read by agent</span>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:15px;padding:15px 17px;background:#FBF9F3;border:1px solid #E2DBCB;border-radius:15px;">
+              <div style="width:42px;height:42px;flex:none;border-radius:11px;background:#F3E3D9;color:#BE6A42;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;letter-spacing:.04em;">PDF</div>
+              <div style="flex:1;min-width:0;"><div style="font-size:14.5px;font-weight:600;color:#211E18;">Transcript_Fall2025.pdf</div><div style="font-size:12px;color:#a59c84;margin-top:2px;">486 KB · Uploaded Jun 12</div></div>
+              <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#15795A;background:#E7EFE4;padding:5px 11px;border-radius:99px;">Read by agent</span>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:15px;padding:15px 17px;background:#FBF9F3;border:1px solid #E2DBCB;border-radius:15px;">
+              <div style="width:42px;height:42px;flex:none;border-radius:11px;background:#E7EFE4;color:#15795A;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;letter-spacing:.04em;">PDF</div>
+              <div style="flex:1;min-width:0;"><div style="font-size:14.5px;font-weight:600;color:#211E18;">Portfolio_MayaChen.pdf</div><div style="font-size:12px;color:#a59c84;margin-top:2px;">8.2 MB · Uploaded Jun 13</div></div>
+              <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#15795A;background:#E7EFE4;padding:5px 11px;border-radius:99px;">Read by agent</span>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:15px;padding:15px 17px;background:#FBF9F3;border:1px solid #E2DBCB;border-radius:15px;">
+              <div style="width:42px;height:42px;flex:none;border-radius:11px;background:#EFE7F2;color:#7d5a92;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;letter-spacing:.03em;">DOCX</div>
+              <div style="flex:1;min-width:0;"><div style="font-size:14.5px;font-weight:600;color:#211E18;">CogSci_Capstone.docx</div><div style="font-size:12px;color:#a59c84;margin-top:2px;">1.1 MB · Uploaded just now</div></div>
+              <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#C99A3A;background:#F5ECD6;padding:5px 11px;border-radius:99px;">Processing…</span>
+            </div>
+
+            </sc-if>
+
+          </div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isNews }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Future Plan" style="padding:34px 42px 44px;max-width:1320px;margin:0 auto;">
+      <div style="margin-bottom:20px;">
+        <div style="font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:#a59c84;font-weight:700;margin-bottom:9px;">Curated for you</div>
+        <h1 style="font-family:'Newsreader',serif;font-weight:400;font-size:40px;line-height:1;margin:0;color:#211E18;">Future Plan</h1>
+        <p style="font-size:15px;color:#79715f;margin:11px 0 0;max-width:600px;line-height:1.5;">Opportunities and reminders your agent surfaced from your conversations — your evolving roadmap, in one feed.</p>
+      </div>
+
+      <div style="display:flex;gap:9px;margin-bottom:24px;flex-wrap:wrap;">
+        <span style="padding:8px 16px;border-radius:99px;background:#15795A;color:#fff;font-size:13px;font-weight:600;">All</span>
+        <span style="padding:8px 16px;border-radius:99px;background:#FBF9F3;border:1px solid #E2DBCB;color:#79715f;font-size:13px;font-weight:500;">Opportunities</span>
+        <span style="padding:8px 16px;border-radius:99px;background:#FBF9F3;border:1px solid #E2DBCB;color:#79715f;font-size:13px;font-weight:500;">Deadlines</span>
+        <span style="padding:8px 16px;border-radius:99px;background:#FBF9F3;border:1px solid #E2DBCB;color:#79715f;font-size:13px;font-weight:500;">Networking</span>
+        <span style="padding:8px 16px;border-radius:99px;background:#FBF9F3;border:1px solid #E2DBCB;color:#79715f;font-size:13px;font-weight:500;">Learning</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:18px;">
+        <sc-for list="{{ planCards }}" as="item" hint-placeholder-count="6">
+          <article style="background:#FBF9F3;border:1px solid #E2DBCB;border-radius:20px;padding:22px;display:flex;flex-direction:column;box-shadow:0 16px 38px -32px rgba(40,50,30,.55);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+              <span style="{{ item.badgeStyle }}">{{ item.categoryLabel }}</span>
+              <span style="font-size:12.5px;color:#a59c84;">{{ item.dateLabel }}</span>
+            </div>
+            <h3 style="font-family:'Newsreader',serif;font-weight:500;font-size:21px;line-height:1.22;margin:0 0 9px;color:#211E18;">{{ item.title }}</h3>
+            <p style="font-size:14px;color:#79715f;line-height:1.55;margin:0 0 18px;">{{ item.description }}</p>
+            <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:14px;padding-top:15px;border-top:1px solid #ece5d5;">
+              <span style="font-size:12px;color:#9a9079;display:flex;align-items:center;gap:6px;min-width:0;">{{ item.meta }}</span>
+              <button onClick="{{ item.delete }}" style="padding:7px 12px;border:1px solid #BE6A42;border-radius:9px;background:#fff;color:#BE6A42;font-family:'Hanken Grotesk';font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;">Delete</button>
+            </div>
+          </article>
+        </sc-for>
+
+        <sc-if value="{{ noPlanItems }}" hint-placeholder-val="{{ false }}">
+          <div style="grid-column:1/-1;padding:36px;text-align:center;border:1px dashed #D8D0BD;border-radius:20px;background:#FBF9F3;color:#9a9079;font-size:14.5px;">No future plan items yet.</div>
+        </sc-if>
+
+        <sc-if value="{{ showDemoPlanItems }}" hint-placeholder-val="{{ false }}">
+
+        <article style="background:#FBF9F3;border:1px solid #E2DBCB;border-radius:20px;padding:22px;display:flex;flex-direction:column;box-shadow:0 16px 38px -32px rgba(40,50,30,.55);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+            <span style="font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#15795A;background:#E7EFE4;padding:5px 11px;border-radius:7px;">Opportunity</span>
+            <span style="font-size:12.5px;color:#a59c84;">Jun 14</span>
+          </div>
+          <h3 style="font-family:'Newsreader',serif;font-weight:500;font-size:21px;line-height:1.22;margin:0 0 9px;color:#211E18;">Google UX Research internship — applications open</h3>
+          <p style="font-size:14px;color:#79715f;line-height:1.55;margin:0 0 18px;">Matches your UX goal and your portfolio. Summer 2027 cohort, applications close Jun 20. Compass drafted talking points for you.</p>
+          <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:15px;border-top:1px solid #ece5d5;">
+            <span style="font-size:12px;color:#9a9079;display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#C99A3A"><path d="M12 2l2.2 6.8H21l-5.5 4 2.1 6.8L12 15.6 6.4 19.6l2.1-6.8L3 8.8h6.8z"></path></svg>From your chat · Jun 14</span>
+            <button style="padding:7px 12px;border:1px solid #15795A;border-radius:9px;background:#fff;color:#15795A;font-family:'Hanken Grotesk';font-size:12.5px;font-weight:600;cursor:pointer;">＋ To-Do</button>
+          </div>
+        </article>
+
+        <article style="background:#FBF9F3;border:1px solid #E2DBCB;border-radius:20px;padding:22px;display:flex;flex-direction:column;box-shadow:0 16px 38px -32px rgba(40,50,30,.55);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+            <span style="font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#BE6A42;background:#F3E3D9;padding:5px 11px;border-radius:7px;">Deadline</span>
+            <span style="font-size:12.5px;color:#a59c84;">Jun 14</span>
+          </div>
+          <h3 style="font-family:'Newsreader',serif;font-weight:500;font-size:21px;line-height:1.22;margin:0 0 9px;color:#211E18;">NSF GRFP — graduate fellowship window</h3>
+          <p style="font-size:14px;color:#79715f;line-height:1.55;margin:0 0 18px;">You mentioned grad school. The fellowship funds 3 years; an info session is on Jun 22. Worth a personal statement draft soon.</p>
+          <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:15px;border-top:1px solid #ece5d5;">
+            <span style="font-size:12px;color:#9a9079;display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#C99A3A"><path d="M12 2l2.2 6.8H21l-5.5 4 2.1 6.8L12 15.6 6.4 19.6l2.1-6.8L3 8.8h6.8z"></path></svg>From your chat · Jun 14</span>
+            <button style="padding:7px 12px;border:1px solid #15795A;border-radius:9px;background:#fff;color:#15795A;font-family:'Hanken Grotesk';font-size:12.5px;font-weight:600;cursor:pointer;">＋ To-Do</button>
+          </div>
+        </article>
+
+        <article style="background:#FBF9F3;border:1px solid #E2DBCB;border-radius:20px;padding:22px;display:flex;flex-direction:column;box-shadow:0 16px 38px -32px rgba(40,50,30,.55);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+            <span style="font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#C99A3A;background:#F5ECD6;padding:5px 11px;border-radius:7px;">Networking</span>
+            <span style="font-size:12.5px;color:#a59c84;">Jun 13</span>
+          </div>
+          <h3 style="font-family:'Newsreader',serif;font-weight:500;font-size:21px;line-height:1.22;margin:0 0 9px;color:#211E18;">Coffee chat with a Berkeley alum at Airbnb</h3>
+          <p style="font-size:14px;color:#79715f;line-height:1.55;margin:0 0 18px;">Compass found a product designer who studied Cog Sci like you. They're open to a 20-minute chat — suggested Jun 18.</p>
+          <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:15px;border-top:1px solid #ece5d5;">
+            <span style="font-size:12px;color:#9a9079;display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#C99A3A"><path d="M12 2l2.2 6.8H21l-5.5 4 2.1 6.8L12 15.6 6.4 19.6l2.1-6.8L3 8.8h6.8z"></path></svg>From your chat · Jun 13</span>
+            <button style="padding:7px 12px;border:1px solid #15795A;border-radius:9px;background:#fff;color:#15795A;font-family:'Hanken Grotesk';font-size:12.5px;font-weight:600;cursor:pointer;">＋ To-Do</button>
+          </div>
+        </article>
+
+        <article style="background:#FBF9F3;border:1px solid #E2DBCB;border-radius:20px;padding:22px;display:flex;flex-direction:column;box-shadow:0 16px 38px -32px rgba(40,50,30,.55);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+            <span style="font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#15795A;background:#E7EFE4;padding:5px 11px;border-radius:7px;">Learning</span>
+            <span style="font-size:12.5px;color:#a59c84;">Jun 12</span>
+          </div>
+          <h3 style="font-family:'Newsreader',serif;font-weight:500;font-size:21px;line-height:1.22;margin:0 0 9px;color:#211E18;">Short course: Design Research Methods</h3>
+          <p style="font-size:14px;color:#79715f;line-height:1.55;margin:0 0 18px;">A 4-week course to strengthen the research side of your portfolio before internship interviews. Free with your .edu email.</p>
+          <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:15px;border-top:1px solid #ece5d5;">
+            <span style="font-size:12px;color:#9a9079;display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#C99A3A"><path d="M12 2l2.2 6.8H21l-5.5 4 2.1 6.8L12 15.6 6.4 19.6l2.1-6.8L3 8.8h6.8z"></path></svg>From your chat · Jun 12</span>
+            <button style="padding:7px 12px;border:1px solid #15795A;border-radius:9px;background:#fff;color:#15795A;font-family:'Hanken Grotesk';font-size:12.5px;font-weight:600;cursor:pointer;">＋ To-Do</button>
+          </div>
+        </article>
+
+        <article style="background:#FBF9F3;border:1px solid #E2DBCB;border-radius:20px;padding:22px;display:flex;flex-direction:column;box-shadow:0 16px 38px -32px rgba(40,50,30,.55);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+            <span style="font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#C99A3A;background:#F5ECD6;padding:5px 11px;border-radius:7px;">Event</span>
+            <span style="font-size:12.5px;color:#a59c84;">Jun 11</span>
+          </div>
+          <h3 style="font-family:'Newsreader',serif;font-weight:500;font-size:21px;line-height:1.22;margin:0 0 9px;color:#211E18;">Figma Config 2026 — free student tickets</h3>
+          <p style="font-size:14px;color:#79715f;line-height:1.55;margin:0 0 18px;">A chance to meet designers and see real product work. On Jun 25. Compass can add prep notes the day before.</p>
+          <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:15px;border-top:1px solid #ece5d5;">
+            <span style="font-size:12px;color:#9a9079;display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#C99A3A"><path d="M12 2l2.2 6.8H21l-5.5 4 2.1 6.8L12 15.6 6.4 19.6l2.1-6.8L3 8.8h6.8z"></path></svg>From your chat · Jun 11</span>
+            <button style="padding:7px 12px;border:1px solid #15795A;border-radius:9px;background:#fff;color:#15795A;font-family:'Hanken Grotesk';font-size:12.5px;font-weight:600;cursor:pointer;">＋ To-Do</button>
+          </div>
+        </article>
+
+        <article style="background:#FBF9F3;border:1px solid #E2DBCB;border-radius:20px;padding:22px;display:flex;flex-direction:column;box-shadow:0 16px 38px -32px rgba(40,50,30,.55);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+            <span style="font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#BE6A42;background:#F3E3D9;padding:5px 11px;border-radius:7px;">Action</span>
+            <span style="font-size:12.5px;color:#a59c84;">Jun 10</span>
+          </div>
+          <h3 style="font-family:'Newsreader',serif;font-weight:500;font-size:21px;line-height:1.22;margin:0 0 9px;color:#211E18;">Reach out to Prof. Alvarez about the HCI lab</h3>
+          <p style="font-size:14px;color:#79715f;line-height:1.55;margin:0 0 18px;">Research experience would strengthen grad applications. Her office hours are Jun 17 — Compass drafted an intro email.</p>
+          <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:15px;border-top:1px solid #ece5d5;">
+            <span style="font-size:12px;color:#9a9079;display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#C99A3A"><path d="M12 2l2.2 6.8H21l-5.5 4 2.1 6.8L12 15.6 6.4 19.6l2.1-6.8L3 8.8h6.8z"></path></svg>From your chat · Jun 10</span>
+            <button style="padding:7px 12px;border:1px solid #15795A;border-radius:9px;background:#fff;color:#15795A;font-family:'Hanken Grotesk';font-size:12.5px;font-weight:600;cursor:pointer;">＋ To-Do</button>
+          </div>
+        </article>
+
+        </sc-if>
+
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isTodo }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="To-Do" style="padding:34px 42px 44px;max-width:1340px;margin:0 auto;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:26px;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:#a59c84;font-weight:700;margin-bottom:9px;">Planned with your agent</div>
+          <h1 style="font-family:'Newsreader',serif;font-weight:400;font-size:40px;line-height:1;margin:0;color:#211E18;">Future To-Do</h1>
+        </div>
+        <div style="min-width:260px;">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px;"><span style="color:#9a9079;font-weight:600;">{{ doneCount }} of {{ totalCount }} done</span><span style="color:#15795A;font-weight:700;">{{ pct }}%</span></div>
+          <div style="height:9px;width:260px;background:#e7e0d0;border-radius:99px;overflow:hidden;"><div style="{{ barStyle }}"></div></div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:start;">
+        <sc-for list="{{ grouped }}" as="grp" hint-placeholder-count="3">
+          <div style="background:#FBF9F3;border:1px solid #E2DBCB;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:11px;align-self:start;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
+              <span style="font-family:'Hanken Grotesk';font-size:15px;font-weight:700;color:#211E18;">{{ grp.name }}</span>
+              <span style="font-size:12px;font-weight:600;color:#9a9079;background:#f1ece0;padding:3px 9px;border-radius:99px;">{{ grp.count }}</span>
+            </div>
+            <sc-for list="{{ grp.items }}" as="t" hint-placeholder-count="3">
+              <div style="display:flex;align-items:flex-start;gap:12px;padding:13px;border-radius:14px;background:#fff;border:1px solid #ece5d5;">
+                <button style="{{ t.checkStyle }}" onClick="{{ t.toggle }}">
+                  <sc-if value="{{ t.check }}" hint-placeholder-val="{{ false }}">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
+                  </sc-if>
+                </button>
+                <div style="flex:1;min-width:0;">
+                  <div style="{{ t.textStyle }}">{{ t.text }}</div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+                    <span style="font-size:11.5px;color:#9a9079;background:#f1ece0;padding:2px 8px;border-radius:6px;">{{ t.tag }}</span>
+                    <span style="width:7px;height:7px;border-radius:50%;background:{{ t.priColor }};"></span>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isCalendar }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Calendar" style="padding:34px 42px 44px;max-width:1380px;margin:0 auto;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:24px;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:#a59c84;font-weight:700;margin-bottom:9px;">Your month ahead</div>
+          <h1 style="font-family:'Newsreader',serif;font-weight:400;font-size:40px;line-height:1;margin:0;color:#211E18;">{{ calendarTitle }}</h1>
+        </div>
+        <div style="display:flex;gap:18px;align-items:center;">
+          <span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:#79715f;"><span style="width:9px;height:9px;border-radius:3px;background:#15795A;"></span>Session</span>
+          <span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:#79715f;"><span style="width:9px;height:9px;border-radius:3px;background:#BE6A42;"></span>Deadline</span>
+          <span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:#79715f;"><span style="width:9px;height:9px;border-radius:3px;background:#C99A3A;"></span>Event</span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:22px;">
+
+        <div style="background:#FBF9F3;border:1px solid #E2DBCB;border-radius:22px;padding:22px;box-shadow:0 20px 48px -36px rgba(40,50,30,.5);">
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:9px;margin-bottom:10px;">
+            <div style="text-align:center;font-size:11.5px;font-weight:700;letter-spacing:.06em;color:#b0a78f;text-transform:uppercase;">Sun</div>
+            <div style="text-align:center;font-size:11.5px;font-weight:700;letter-spacing:.06em;color:#b0a78f;text-transform:uppercase;">Mon</div>
+            <div style="text-align:center;font-size:11.5px;font-weight:700;letter-spacing:.06em;color:#b0a78f;text-transform:uppercase;">Tue</div>
+            <div style="text-align:center;font-size:11.5px;font-weight:700;letter-spacing:.06em;color:#b0a78f;text-transform:uppercase;">Wed</div>
+            <div style="text-align:center;font-size:11.5px;font-weight:700;letter-spacing:.06em;color:#b0a78f;text-transform:uppercase;">Thu</div>
+            <div style="text-align:center;font-size:11.5px;font-weight:700;letter-spacing:.06em;color:#b0a78f;text-transform:uppercase;">Fri</div>
+            <div style="text-align:center;font-size:11.5px;font-weight:700;letter-spacing:.06em;color:#b0a78f;text-transform:uppercase;">Sat</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:9px;">
+            <sc-for list="{{ cells }}" as="c" hint-placeholder-count="35">
+              <sc-if value="{{ c.blank }}" hint-placeholder-val="{{ false }}"><div style="min-height:118px;"></div></sc-if>
+              <sc-if value="{{ c.day }}" hint-placeholder-val="{{ true }}">
+                <div style="{{ c.cellStyle }}">
+                  <span style="{{ c.numStyle }}">{{ c.day }}</span>
+                  <sc-for list="{{ c.events }}" as="e" hint-placeholder-count="0">
+                    <div style="{{ e.style }}">{{ e.label }}</div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </sc-for>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#211E18;margin:2px 0 14px;">This week</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;">
+            <sc-for list="{{ weekEvents }}" as="event" hint-placeholder-count="4">
+              <div style="{{ event.cardStyle }}">
+                <div style="text-align:center;flex:none;"><div style="font-size:10.5px;color:#a59c84;font-weight:700;letter-spacing:.05em;">{{ event.month }}</div><div style="{{ event.dayStyle }}">{{ event.day }}</div></div>
+                <div style="min-width:0;"><div style="font-size:14px;font-weight:600;color:#2c2820;line-height:1.3;">{{ event.title }}</div><div style="{{ event.metaStyle }}">{{ event.meta }}</div></div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ noWeekEvents }}" hint-placeholder-val="{{ false }}">
+              <div style="grid-column:1/-1;padding:24px;text-align:center;border:1px dashed #D8D0BD;border-radius:16px;background:#FBF9F3;color:#9a9079;font-size:14px;">No calendar events this week.</div>
+            </sc-if>
+            <sc-if value="{{ showDemoCalendarEvents }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;gap:14px;align-items:flex-start;background:#FBF9F3;border:1px solid #E2DBCB;border-left:3px solid #15795A;border-radius:16px;padding:15px 17px;">
+              <div style="text-align:center;flex:none;"><div style="font-size:10.5px;color:#a59c84;font-weight:700;letter-spacing:.05em;">JUN</div><div style="font-family:'Newsreader',serif;font-size:26px;color:#211E18;line-height:1;">17</div></div>
+              <div style="min-width:0;"><div style="font-size:14px;font-weight:600;color:#2c2820;line-height:1.3;">Prof. Alvarez office hours</div><div style="font-size:12px;color:#a59c84;margin-top:4px;">2:00 PM · HCI Lab</div></div>
+            </div>
+            <div style="display:flex;gap:14px;align-items:flex-start;background:#FBF9F3;border:1px solid #E2DBCB;border-left:3px solid #15795A;border-radius:16px;padding:15px 17px;">
+              <div style="text-align:center;flex:none;"><div style="font-size:10.5px;color:#a59c84;font-weight:700;letter-spacing:.05em;">JUN</div><div style="font-family:'Newsreader',serif;font-size:26px;color:#211E18;line-height:1;">18</div></div>
+              <div style="min-width:0;"><div style="font-size:14px;font-weight:600;color:#2c2820;line-height:1.3;">Coffee chat · Airbnb alum</div><div style="font-size:12px;color:#a59c84;margin-top:4px;">11:00 AM · Virtual</div></div>
+            </div>
+            <div style="display:flex;gap:14px;align-items:flex-start;background:#FBF9F3;border:1px solid #E2DBCB;border-left:3px solid #BE6A42;border-radius:16px;padding:15px 17px;">
+              <div style="text-align:center;flex:none;"><div style="font-size:10.5px;color:#a59c84;font-weight:700;letter-spacing:.05em;">JUN</div><div style="font-family:'Newsreader',serif;font-size:26px;color:#BE6A42;line-height:1;">20</div></div>
+              <div style="min-width:0;"><div style="font-size:14px;font-weight:600;color:#2c2820;line-height:1.3;">Google application due</div><div style="font-size:12px;color:#BE6A42;margin-top:4px;font-weight:600;">11:59 PM · Deadline</div></div>
+            </div>
+            <div style="display:flex;gap:14px;align-items:flex-start;background:#FBF9F3;border:1px solid #E2DBCB;border-left:3px solid #C99A3A;border-radius:16px;padding:15px 17px;">
+              <div style="text-align:center;flex:none;"><div style="font-size:10.5px;color:#a59c84;font-weight:700;letter-spacing:.05em;">JUN</div><div style="font-family:'Newsreader',serif;font-size:26px;color:#211E18;line-height:1;">22</div></div>
+              <div style="min-width:0;"><div style="font-size:14px;font-weight:600;color:#2c2820;line-height:1.3;">NSF GRFP info session</div><div style="font-size:12px;color:#a59c84;margin-top:4px;">4:00 PM · Online</div></div>
+            </div>
+            </sc-if>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    </sc-if>
+
+  </main>
+
+  <button onClick="{{ toggleAgent }}" style="{{ agentLauncherStyle }}">
+    <span style="width:9px;height:9px;border-radius:50%;background:#2EA66F;box-shadow:0 0 0 4px rgba(46,166,111,.16);flex:none;"></span>
+    <span>{{ agentLauncherLabel }}</span>
+  </button>
+
+  <section style="{{ agentDrawerStyle }}">
+    <div style="height:54px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 16px 0 18px;border-bottom:1px solid #E2DBCB;background:#F4F0E6;">
+      <div style="display:flex;align-items:center;gap:9px;min-width:0;">
+        <span style="width:9px;height:9px;border-radius:50%;background:#2EA66F;box-shadow:0 0 0 4px rgba(46,166,111,.18);flex:none;"></span>
+        <span style="font-size:13px;font-weight:700;color:#6f6755;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Compass Agent · live</span>
+      </div>
+      <button onClick="{{ closeAgent }}" aria-label="Close agent" style="width:32px;height:32px;border:1px solid #D8D0BD;background:#FBF9F3;color:#79715f;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+      </button>
+    </div>
+    <iframe src="{{ agentUrl }}" frameborder="0" style="display:block;width:100%;height:calc(100% - 54px);border:none;background:#fff;" allow="microphone; clipboard-write"></iframe>
+  </section>
+</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 1280, &quot;height&quot;: 860 },
+  &quot;agentEmbedUrl&quot;: { &quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;https://copilotstudio.preview.microsoft.com/environments/84fde507-2949-e2ea-aeda-ae5575d91b0d/bots/Default_compass_dM4_Yr/canvas?__version__=2&amp;enableFileAttachment=false&amp;cliAgent=true&quot;, &quot;tsType&quot;: &quot;string&quot; },
+  &quot;apiBaseUrl&quot;: { &quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;https://compass-api-wus2-0617-asfgede3bpd8ebe8.westus2-01.azurewebsites.net&quot;, &quot;tsType&quot;: &quot;string&quot; }
+}">
+class Component extends DCLogic {
+  readStored(key, fallback = '') {
+    try {
+      return window.localStorage.getItem(key) || fallback;
+    } catch (error) {
+      return fallback;
+    }
+  }
+
+  writeStored(key, value) {
+    try {
+      window.localStorage.setItem(key, value);
+    } catch (error) {}
+  }
+
+  removeStored(key) {
+    try {
+      window.localStorage.removeItem(key);
+    } catch (error) {}
+  }
+
+  defaultFunctionKey() {
+  return '';
+}
+
+  readFunctionKey() {
+  return String(this.readStored('compass-function-key', '') || '').trim();
+}
+
+  defaultProfile() {
+    return {
+      id: 'demo-student-001',
+      studentId: 'demo-student-001',
+      name: 'Maya Chen',
+      year: 'Year 2 \u00b7 Sophomore',
+      major: 'Cognitive Science',
+      school: 'UC Berkeley',
+      goal: 'UX Research / Product',
+      track: 'Internship + grad school',
+      location: 'Berkeley, CA',
+      completenessPct: 82
+    };
+  }
+
+  defaultTodos() {
+    return [
+      { id:'task-1', text:'Submit Google UX Research application', group:'This week', tag:'Application', done:false, pri:'high', dueDate:'2026-06-20' },
+      { id:'task-2', text:'Email Prof. Alvarez about the HCI lab', group:'This week', tag:'Networking', done:false, pri:'med', dueDate:'2026-06-17' },
+      { id:'task-3', text:'Finish portfolio case study #2', group:'This week', tag:'Portfolio', done:true, pri:'high' },
+      { id:'task-4', text:'Draft grad-school personal statement', group:'This month', tag:'Writing', done:false, pri:'med' },
+      { id:'task-5', text:'Mock interview with Career Center', group:'This month', tag:'Prep', done:false, pri:'med' },
+      { id:'task-6', text:'Refresh LinkedIn and resume', group:'This month', tag:'Profile', done:true, pri:'low' },
+      { id:'task-7', text:'Research 5 HCI master\u2019s programs', group:'Later', tag:'Research', done:false, pri:'low' },
+      { id:'task-8', text:'Build one portfolio side-project', group:'Later', tag:'Portfolio', done:false, pri:'low' }
+    ];
+  }
+
+  defaultPlanItems() {
+    return [
+      { id:'plan-1', title:'Google UX Research internship — applications open', category:'Opportunity', priority:'high', description:'Matches your UX goal and portfolio. Applications close Jun 20.', date:'2026-06-14', source:'demo' },
+      { id:'plan-2', title:'NSF GRFP — graduate fellowship window', category:'Deadline', priority:'high', description:'You mentioned grad school. The fellowship info session is on Jun 22.', date:'2026-06-14', source:'demo' },
+      { id:'plan-3', title:'Coffee chat with a Berkeley alum at Airbnb', category:'Networking', priority:'medium', description:'A product designer with a Cog Sci path is open to a 20-minute chat.', date:'2026-06-13', source:'demo' },
+      { id:'plan-4', title:'Short course: Design Research Methods', category:'Learning', priority:'medium', description:'A 4-week course to strengthen the research side of your portfolio.', date:'2026-06-12', source:'demo' }
+    ];
+  }
+
+  defaultDocuments() {
+    return [
+      { id:'doc-1', name:'Resume_2026.pdf', type:'PDF', size:210000, status:'read', createdAt:'2026-06-12T09:00:00Z' },
+      { id:'doc-2', name:'Transcript_Fall2025.pdf', type:'PDF', size:486000, status:'read', createdAt:'2026-06-12T10:00:00Z' },
+      { id:'doc-3', name:'Portfolio_MayaChen.pdf', type:'PDF', size:8200000, status:'read', createdAt:'2026-06-13T11:00:00Z' }
+    ];
+  }
+
+  defaultEvents() {
+    return [
+      { id:'event-1', label:'Office hours', title:'Prof. Alvarez office hours', date:'2026-06-17', type:'session', location:'HCI Lab' },
+      { id:'event-2', label:'Coffee chat', title:'Coffee chat · Airbnb alum', date:'2026-06-18', type:'session', location:'Virtual' },
+      { id:'event-3', label:'Google app due', title:'Google application due', date:'2026-06-20', type:'deadline', location:'11:59 PM' },
+      { id:'event-4', label:'GRFP session', title:'NSF GRFP info session', date:'2026-06-22', type:'event', location:'Online' }
+    ];
+  }
+
+  state = {
+    agentConnected: true,
+    studentId: this.readStored('compass-student-id', 'demo-student-001'),
+    functionKey: this.readFunctionKey(),
+    draftStudentId: this.readStored('compass-student-id', 'demo-student-001'),
+    draftFunctionKey: this.readFunctionKey(),
+    setupMessage: '',
+    documentUploadMessage: '',
+    apiLoading: false,
+    apiError: '',
+    dataSource: 'demo',
+    page: 'home',
+    agentOpen: false,
+    editing: false,
+    draft: {},
+    profile: this.defaultProfile(),
+    planItems: this.defaultPlanItems(),
+    documents: this.defaultDocuments(),
+    calendarEvents: this.defaultEvents(),
+    nextDeadline: null,
+    todos: this.defaultTodos()
+  };
+
+  componentDidMount() {
+    this.initMicrosoftLogin();
+  }
+
+  async initMicrosoftLogin() {
+    const CLIENT_ID = '786d2a41-be52-4051-aaef-176f7d87daa6';
+    const TENANT_ID = 'd3a01b20-c7ed-451f-a648-b55f5b479a41';
+    // demo 阶段 true：登录后仍看示例数据；以后正式用改成 false
+    const USE_DEMO_STUDENT_ID = true;
+
+    if (!window.msal) {
+      if (this.state.functionKey) this.loadAllData();
+      return;
+    }
+
+    const pca = new window.msal.PublicClientApplication({
+      auth: {
+        clientId: CLIENT_ID,
+        authority: 'https://login.microsoftonline.com/' + TENANT_ID,
+        redirectUri: window.location.href.split('#')[0].split('?')[0]
+      },
+      cache: { cacheLocation: 'localStorage' }
+    });
+
+    if (pca.initialize) { try { await pca.initialize(); } catch (e) {} }
+
+    let account = null;
+    try {
+      const result = await pca.handleRedirectPromise();
+      account = (result && result.account) || pca.getAllAccounts()[0] || null;
+    } catch (e) {
+      account = pca.getAllAccounts()[0] || null;
+    }
+
+    if (!account) {
+      try { await pca.loginRedirect({ scopes: ['User.Read'] }); } catch (e) {}
+      return;
+    }
+
+    const claims = account.idTokenClaims || {};
+    const realId = claims.oid || account.username || account.homeAccountId;
+    const studentId = USE_DEMO_STUDENT_ID ? 'demo-student-001' : realId;
+
+    this.writeStored('compass-student-id', studentId);
+    this.setState({
+      studentId,
+      draftStudentId: studentId
+    }, () => {
+      if (this.state.functionKey) this.loadAllData();
+    });
+  }
+
+  apiBase() {
+    const fallback = 'https://compass-api-wus2-0617-asfgede3bpd8ebe8.westus2-01.azurewebsites.net';
+    return String(this.props.apiBaseUrl || fallback).replace(/\/+$/, '');
+  }
+
+  async apiCall(action, body = {}) {
+    const key = this.state.functionKey;
+    if (!key) throw new Error('Missing Azure Function key.');
+
+    const url = this.apiBase() + '/api/' + action + '?code=' + key;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=UTF-8'
+      },
+      body: JSON.stringify({ studentId: this.state.studentId, ...body })
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok && res.status !== 404) {
+      throw new Error(data.message || 'API request failed.');
+    }
+    return data;
+  }
+
+  async loadAllData() {
+    if (!this.state.functionKey) return;
+    this.setState({ apiLoading: true, apiError: '', setupMessage: '' });
+
+    try {
+      const [profileRes, planRes, todoRes, calendarRes, documentRes, deadlineRes] = await Promise.all([
+        this.apiCall('getStudentProfile'),
+        this.apiCall('listPlanItems'),
+        this.apiCall('listTodos'),
+        this.apiCall('listCalendarEvents'),
+        this.apiCall('listDocuments'),
+        this.apiCall('getNextDeadline')
+      ]);
+
+      this.setState({
+        profile: profileRes.profile || { ...this.defaultProfile(), id: this.state.studentId, studentId: this.state.studentId, name: 'New student' },
+        draft: profileRes.profile || {},
+        planItems: Array.isArray(planRes.items) ? planRes.items : [],
+        todos: Array.isArray(todoRes.items) ? todoRes.items : [],
+        calendarEvents: Array.isArray(calendarRes.items) ? calendarRes.items : [],
+        documents: Array.isArray(documentRes.items) ? documentRes.items : [],
+        nextDeadline: deadlineRes.deadline || null,
+        apiLoading: false,
+        apiError: '',
+        dataSource: 'live'
+      });
+    } catch (error) {
+      this.setState({
+        apiLoading: false,
+        apiError: error.message || 'Could not sync data.',
+        dataSource: 'demo'
+      });
+    }
+  }
+
+  saveWorkspaceSetup() {
+    const studentId = String(this.state.draftStudentId || '').trim();
+    const functionKey = String(this.state.draftFunctionKey || this.defaultFunctionKey()).trim();
+
+    if (!studentId) {
+      this.setState({ setupMessage: 'Student ID is required.' });
+      return;
+    }
+
+    this.writeStored('compass-agent-connected', 'true');
+    this.writeStored('compass-student-id', studentId);
+    this.writeStored('compass-function-key', functionKey);
+
+    this.setState({
+      studentId,
+      functionKey,
+      setupMessage: '',
+      page: 'home'
+    }, () => this.loadAllData());
+  }
+
+  resetAgentConnection() {
+    this.removeStored('compass-function-key');
+    this.setState({
+      functionKey: this.defaultFunctionKey(),
+      draftFunctionKey: this.defaultFunctionKey(),
+      setupMessage: 'Using the built-in test Function key.',
+      dataSource: 'demo'
+    });
+  }
+
+  nav(p) { return () => this.setState({ page: p }); }
+  toggleAgent() { this.setState((state) => ({ agentOpen: !state.agentOpen })); }
+  closeAgent() { this.setState({ agentOpen: false }); }
+  startEdit() { this.setState(s => ({ editing: true, draft: { ...s.profile } })); }
+  cancelEdit() { this.setState({ editing: false }); }
+  setField(k) { return (e) => { const v = e.target.value; this.setState(s => ({ draft: { ...s.draft, [k]: v } })); }; }
+
+  async saveEdit() {
+    const next = { ...this.state.draft };
+    if (!this.state.functionKey) {
+      this.setState({ profile: next, editing: false });
+      return;
+    }
+
+    try {
+      const res = await this.apiCall('updateStudentProfile', next);
+      this.setState({ profile: res.profile || next, draft: res.profile || next, editing: false, apiError: '', dataSource: 'live' });
+    } catch (error) {
+      this.setState({ apiError: error.message || 'Could not save profile.' });
+    }
+  }
+
+  async toggleTodo(todo) {
+    const nextDone = !todo.done;
+    this.setState(s => ({ todos: s.todos.map(x => x.id === todo.id ? { ...x, done: nextDone } : x) }));
+
+    if (!this.state.functionKey) return;
+    try {
+      const res = await this.apiCall('updateTodoStatus', { todoId: todo.id, done: nextDone });
+      if (res.todo) this.setState(s => ({ todos: s.todos.map(x => x.id === todo.id ? res.todo : x) }));
+    } catch (error) {
+      this.setState(s => ({
+        apiError: error.message || 'Could not update todo.',
+        todos: s.todos.map(x => x.id === todo.id ? { ...x, done: todo.done } : x)
+      }));
+    }
+  }
+
+  async deletePlanItem(item) {
+    this.setState(s => ({ planItems: s.planItems.filter(x => x.id !== item.id) }));
+    if (!this.state.functionKey) return;
+
+    try {
+      await this.apiCall('deletePlanItem', { planItemId: item.id });
+    } catch (error) {
+      this.setState({ apiError: error.message || 'Could not delete plan item.' });
+      this.loadAllData();
+    }
+  }
+
+  async recordSelectedDocuments(event) {
+    const files = Array.from(event.target.files || []);
+    await this.recordDocumentFiles(files);
+    event.target.value = '';
+  }
+
+  handleDocumentDragOver(event) {
+    event.preventDefault();
+  }
+
+  async handleDocumentDrop(event) {
+    event.preventDefault();
+    const files = Array.from(event.dataTransfer?.files || []);
+    await this.recordDocumentFiles(files);
+  }
+
+  async recordDocumentFiles(files) {
+    if (!files.length) return;
+
+    if (!this.state.functionKey) {
+      this.setState({ documentUploadMessage: 'Cosmos sync is not connected yet.' });
+      return;
+    }
+
+    const tooLarge = files.find(file => file.size > 25 * 1024 * 1024);
+    if (tooLarge) {
+      this.setState({ documentUploadMessage: tooLarge.name + ' is larger than 25 MB.' });
+      return;
+    }
+
+    this.setState({ documentUploadMessage: 'Recording ' + files.length + ' document' + (files.length > 1 ? 's' : '') + '...' });
+
+    try {
+      for (const file of files) {
+        await this.apiCall('recordDocument', {
+          name: file.name,
+          type: this.documentType(file),
+          size: file.size,
+          mimeType: file.type || '',
+          status: 'recorded',
+          source: 'web-ui'
+        });
+      }
+
+      this.setState({ documentUploadMessage: 'Document metadata saved to Cosmos DB.' });
+      await this.loadAllData();
+    } catch (error) {
+      this.setState({ documentUploadMessage: error.message || 'Could not record document.' });
+    }
+  }
+
+  documentType(file) {
+    const name = String(file.name || '');
+    const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : '';
+    if (ext) return ext;
+    if (file.type && file.type.includes('/')) return file.type.split('/').pop();
+    return 'document';
+  }
+
+  setDraftStudentId(e) { this.setState({ draftStudentId: e.target.value }); }
+  setDraftFunctionKey(e) { this.setState({ draftFunctionKey: e.target.value }); }
+
+  clean(value, fallback = '') {
+    const text = value === undefined || value === null ? '' : String(value).trim();
+    return text || fallback;
+  }
+
+  formatDate(value, fallback = 'No date') {
+    if (!value) return fallback;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return fallback;
+    return date.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  }
+
+  formatSize(value) {
+    const size = Number(value || 0);
+    if (!size) return 'Size unknown';
+    if (size >= 1000000) return (size / 1000000).toFixed(1) + ' MB';
+    return Math.max(1, Math.round(size / 1000)) + ' KB';
+  }
+
+  categoryColor(category = '') {
+    const c = String(category).toLowerCase();
+    if (c.includes('deadline')) return { fg:'#BE6A42', bg:'#F3E3D9' };
+    if (c.includes('network')) return { fg:'#C99A3A', bg:'#F5ECD6' };
+    if (c.includes('event')) return { fg:'#C99A3A', bg:'#F5ECD6' };
+    if (c.includes('action')) return { fg:'#BE6A42', bg:'#F3E3D9' };
+    return { fg:'#15795A', bg:'#E7EFE4' };
+  }
+
+  decoratePlanItem(item) {
+    const category = this.clean(item.category || item.type, 'Action');
+    const color = this.categoryColor(category);
+    const date = item.date || item.deadline || item.dueDate || item.createdAt;
+    return {
+      ...item,
+      title: this.clean(item.title, 'Untitled plan item'),
+      description: this.clean(item.description || item.reason, 'No description yet.'),
+      categoryLabel: category,
+      dateLabel: this.formatDate(date, 'No date'),
+      meta: (item.source || 'Agent') + ' · ' + this.formatDate(item.createdAt || date, 'recently'),
+      dotStyle: 'width:9px;height:9px;border-radius:50%;background:' + color.fg + ';margin-top:6px;flex:none;',
+      badgeStyle: 'font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:' + color.fg + ';background:' + color.bg + ';padding:5px 11px;border-radius:7px;white-space:nowrap;',
+      delete: () => this.deletePlanItem(item)
+    };
+  }
+
+  decorateDocument(doc) {
+    const rawType = this.clean(doc.type || doc.fileType || doc.extension || doc.name?.split('.').pop(), 'FILE').toUpperCase();
+    const status = this.clean(doc.status, 'recorded').toLowerCase();
+    const ok = status.includes('read') || status.includes('complete') || status.includes('processed');
+    return {
+      name: this.clean(doc.name || doc.fileName || doc.title, 'Untitled document'),
+      typeLabel: rawType.slice(0, 4),
+      meta: this.formatSize(doc.size || doc.fileSize) + ' · ' + this.formatDate(doc.createdAt || doc.uploadedAt, 'Recorded'),
+      statusLabel: ok ? 'Read by agent' : (status.includes('record') || status.includes('upload') ? 'Metadata only' : 'Processing'),
+      typeStyle: 'width:42px;height:42px;flex:none;border-radius:11px;background:' + (rawType === 'DOCX' ? '#EFE7F2' : '#E7EFE4') + ';color:' + (rawType === 'DOCX' ? '#7d5a92' : '#15795A') + ';display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;letter-spacing:.03em;',
+      statusStyle: 'display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:' + (ok ? '#15795A' : '#C99A3A') + ';background:' + (ok ? '#E7EFE4' : '#F5ECD6') + ';padding:5px 11px;border-radius:99px;white-space:nowrap;'
+    };
+  }
+
+  decorateDeadline(deadline) {
+    if (!deadline) return { title:'No upcoming deadline', detail:'Add a dated todo, plan item, or calendar event.' };
+    return {
+      title: this.clean(deadline.title, 'Upcoming deadline'),
+      detail: this.formatDate(deadline.date, 'Soon') + ' · ' + this.clean(deadline.sourceType, 'plan')
+    };
+  }
+
+  deriveNextDeadline() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const start = today.getTime();
+    const candidates = [
+      ...(this.state.calendarEvents || []).map(item => ({
+        title: item.title || item.label,
+        date: item.date,
+        sourceType: item.type || 'calendar'
+      })),
+      ...(this.state.planItems || []).map(item => ({
+        title: item.title,
+        date: item.deadline || item.dueDate || item.date,
+        sourceType: item.category || 'plan'
+      })),
+      ...(this.state.todos || [])
+        .filter(item => !item.done)
+        .map(item => ({
+          title: item.text || item.title,
+          date: item.dueDate || item.deadline || item.date,
+          sourceType: 'todo'
+        }))
+    ]
+      .map(item => ({ ...item, time: new Date(item.date || '').getTime() }))
+      .filter(item => item.time && !Number.isNaN(item.time) && item.time >= start)
+      .sort((a, b) => a.time - b.time);
+
+    return candidates[0] || null;
+  }
+
+  profilePct(profile) {
+    if (profile.completenessPct !== undefined) return Number(profile.completenessPct) || 0;
+    if (profile.completeness && profile.completeness.pct !== undefined) return Number(profile.completeness.pct) || 0;
+    const fields = ['name','year','school','major','goal','track','location'];
+    return Math.round(fields.filter(f => this.clean(profile[f])).length / fields.length * 100);
+  }
+
+  buildCalendar(events) {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const first = new Date(year, month, 1);
+    const dayCount = new Date(year, month + 1, 0).getDate();
+    const blanks = first.getDay();
+    const colorFor = (event) => this.categoryColor(event.type || event.category || event.label);
+    const cells = [];
+    for (let i = 0; i < blanks; i++) cells.push({ blank:true, day:'', key:'b' + i });
+    for (let d = 1; d <= dayCount; d++) {
+      const isToday = d === now.getDate();
+      const evs = events.filter(e => {
+        const date = new Date(e.date);
+        return !Number.isNaN(date.getTime()) && date.getFullYear() === year && date.getMonth() === month && date.getDate() === d;
+      });
+      cells.push({
+        blank:false,
+        day:d,
+        key:'d' + d,
+        cellStyle: 'min-height:118px;padding:11px;border-radius:15px;display:flex;flex-direction:column;gap:6px;background:' + (isToday ? '#15795A' : '#fff') + ';border:1px solid ' + (isToday ? '#15795A' : '#ece5d5') + ';',
+        numStyle: "font-family:'Hanken Grotesk';font-size:15px;font-weight:700;color:" + (isToday ? '#fff' : '#2c2820') + ';',
+        events: evs.map((e, i) => {
+          const color = colorFor(e);
+          return {
+            label: this.clean(e.label || e.title, 'Event'),
+            key:'e' + d + i,
+            style: "font-size:11.5px;line-height:1.3;padding:4px 8px;border-radius:7px;font-family:'Hanken Grotesk';font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:" + (isToday ? 'rgba(255,255,255,.2)' : color.bg) + ';color:' + (isToday ? '#fff' : color.fg) + ';'
+          };
+        })
+      });
+    }
+    return cells;
+  }
+
+  weekEvents(events) {
+    const now = new Date();
+    const start = new Date(now);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 7);
+    return events
+      .filter(e => {
+        const date = new Date(e.date);
+        return !Number.isNaN(date.getTime()) && date >= start && date < end;
+      })
+      .slice(0, 6)
+      .map(e => {
+        const date = new Date(e.date);
+        const color = this.categoryColor(e.type || e.category || e.label);
+        return {
+          title: this.clean(e.title || e.label, 'Calendar event'),
+          month: date.toLocaleDateString('en-US', { month:'short' }).toUpperCase(),
+          day: String(date.getDate()),
+          meta: this.clean(e.location || e.type, 'Calendar'),
+          cardStyle: 'display:flex;gap:14px;align-items:flex-start;background:#FBF9F3;border:1px solid #E2DBCB;border-left:3px solid ' + color.fg + ';border-radius:16px;padding:15px 17px;',
+          dayStyle: "font-family:'Newsreader',serif;font-size:26px;color:" + color.fg + ';line-height:1;',
+          metaStyle: 'font-size:12px;color:' + color.fg + ';margin-top:4px;font-weight:600;'
+        };
+      });
+  }
+
+  renderVals() {
+    const page = this.state.page;
+    const navBase = "display:flex;align-items:center;gap:13px;width:100%;padding:11px 14px;border:none;border-radius:12px;font-family:'Hanken Grotesk',sans-serif;font-size:15px;cursor:pointer;text-align:left;white-space:nowrap;transition:background .18s ease,color .18s ease;";
+    const on = 'background:#E7EFE4;color:#15795A;font-weight:600;';
+    const off = 'background:transparent;color:#7a7260;font-weight:500;';
+    const ns = (p) => navBase + (page === p ? on : off);
+
+    const p = this.state.profile || {};
+    const name = this.clean(p.name, 'Student');
+    const initials = this.clean(p.initials, (name.split(/\s+/).map(w => w[0]).join('').slice(0,2).toUpperCase()) || 'S');
+    const defaultAgentUrl = 'https://copilotstudio.preview.microsoft.com/environments/84fde507-2949-e2ea-aeda-ae5575d91b0d/bots/Default_compass_dM4_Yr/canvas?__version__=2&enableFileAttachment=false&cliAgent=true';
+    const agentUrl = (this.props.agentEmbedUrl || defaultAgentUrl).trim();
+    const hasAgent = agentUrl.length > 0;
+    const profileCompleteness = this.profilePct(p);
+    const agentOpen = Boolean(this.state.agentOpen);
+
+    const todos = Array.isArray(this.state.todos) ? this.state.todos : [];
+    const doneCount = todos.filter(t => t.done).length;
+    const totalCount = todos.length;
+    const pct = totalCount === 0 ? 0 : Math.round(doneCount / totalCount * 100);
+    const priColors = { high:'#BE6A42', med:'#C99A3A', medium:'#C99A3A', low:'#9aa089' };
+    const order = ['This week', 'This month', 'Later'];
+    const grouped = order.map(g => {
+      const items = todos.filter(t => (t.group || 'This week') === g).map(t => ({
+        ...t,
+        text: this.clean(t.text || t.title, 'Untitled todo'),
+        tag: this.clean(t.tag || t.category, 'Task'),
+        check: Boolean(t.done),
+        toggle: () => this.toggleTodo(t),
+        priColor: priColors[t.pri || t.priority] || '#C99A3A',
+        checkStyle: 'width:23px;height:23px;border-radius:7px;flex:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s ease;padding:0;border:1.6px solid ' + (t.done ? '#15795A' : '#cfc7b4') + ';background:' + (t.done ? '#15795A' : '#fff') + ';',
+        textStyle: 'font-size:15px;line-height:1.4;color:' + (t.done ? '#a9a08c' : '#2c2820') + ';' + (t.done ? 'text-decoration:line-through;' : '')
+      }));
+      return { name:g, count:items.length, items };
+    });
+
+    const planCards = (this.state.planItems || []).map(item => this.decoratePlanItem(item));
+    const documentRows = (this.state.documents || []).map(doc => this.decorateDocument(doc));
+    const cells = this.buildCalendar(this.state.calendarEvents || []);
+    const weekEvents = this.weekEvents(this.state.calendarEvents || []);
+    const now = new Date();
+    const nextDeadline = this.decorateDeadline(this.state.nextDeadline || this.deriveNextDeadline());
+
+    return {
+      page,
+      needsAgentSetup: false,
+      appReady: true,
+      isHome: page === 'home', isProfile: page === 'profile', isNews: page === 'news', isTodo: page === 'todo', isCalendar: page === 'calendar',
+      goHome: this.nav('home'), goProfile: this.nav('profile'), goNews: this.nav('news'), goTodo: this.nav('todo'), goCalendar: this.nav('calendar'),
+      navHome: ns('home'), navProfile: ns('profile'), navNews: ns('news'), navTodo: ns('todo'), navCalendar: ns('calendar'),
+      studentId: this.state.studentId,
+      draftStudentId: this.state.draftStudentId,
+      draftFunctionKey: this.state.draftFunctionKey,
+      setDraftStudentId: (e) => this.setDraftStudentId(e),
+      setDraftFunctionKey: (e) => this.setDraftFunctionKey(e),
+      setupMessage: this.state.setupMessage || this.state.apiError,
+      documentUploadMessage: this.state.documentUploadMessage,
+      recordSelectedDocuments: (e) => this.recordSelectedDocuments(e),
+      handleDocumentDragOver: (e) => this.handleDocumentDragOver(e),
+      handleDocumentDrop: (e) => this.handleDocumentDrop(e),
+      apiStatusLabel: this.state.apiLoading ? 'Syncing' : (this.state.dataSource === 'live' ? 'Live' : 'Demo'),
+      apiStatusStyle: 'font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:99px;color:' + (this.state.dataSource === 'live' ? '#15795A' : '#9a9079') + ';background:' + (this.state.dataSource === 'live' ? '#E7EFE4' : '#f1ece0') + ';',
+      saveWorkspaceSetup: () => this.saveWorkspaceSetup(),
+      refreshData: () => this.loadAllData(),
+      studentName: name,
+      firstName: name.split(/\s+/)[0] || name,
+      studentMajor: this.clean(p.major) + ' \u00b7 ' + this.clean(p.school),
+      initials,
+      profile: p,
+      profileCompleteness,
+      profileCompletenessStyle: 'width:' + profileCompleteness + '%;height:100%;border-radius:99px;background:linear-gradient(90deg,#2EA66F,#15795A);',
+      editing: this.state.editing,
+      draft: this.state.draft,
+      startEdit: () => this.startEdit(),
+      cancelEdit: () => this.cancelEdit(),
+      saveEdit: () => this.saveEdit(),
+      fName: this.setField('name'), fYear: this.setField('year'), fMajor: this.setField('major'), fSchool: this.setField('school'), fGoal: this.setField('goal'), fTrack: this.setField('track'), fLocation: this.setField('location'),
+      hasAgent,
+      noAgent: !hasAgent,
+      agentUrl,
+      resetAgentConnection: () => this.resetAgentConnection(),
+      toggleAgent: () => this.toggleAgent(),
+      closeAgent: () => this.closeAgent(),
+      agentLauncherLabel: agentOpen ? 'Hide agent' : 'Ask Compass',
+      agentLauncherStyle: "position:fixed;right:22px;bottom:22px;z-index:60;display:" + (agentOpen ? 'none' : 'flex') + ";align-items:center;gap:10px;padding:12px 15px;border:1px solid #D8D0BD;border-radius:999px;background:#FBF9F3;color:#15795A;font-family:'Hanken Grotesk';font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 18px 44px -24px rgba(32,45,34,.45);",
+      agentDrawerStyle: "position:fixed;top:18px;right:18px;bottom:18px;width:min(430px,calc(100vw - 36px));z-index:55;overflow:hidden;border:1px solid #D8D0BD;border-radius:20px;background:#fff;box-shadow:0 28px 80px -32px rgba(27,39,31,.55);transition:transform .24s ease,opacity .2s ease;transform:" + (agentOpen ? 'translateX(0)' : 'translateX(calc(100% + 28px))') + ";opacity:" + (agentOpen ? '1' : '.98') + ";pointer-events:" + (agentOpen ? 'auto' : 'none') + ";",
+      grouped, doneCount, totalCount, pct,
+      barStyle: 'width:' + pct + '%;height:100%;border-radius:99px;background:linear-gradient(90deg,#2EA66F,#15795A);transition:width .3s ease;',
+      planCards,
+      homePlanItems: planCards.slice(0, 5),
+      agentHighlights: planCards.slice(0, 2),
+      noPlanItems: planCards.length === 0,
+      showDemoPlanItems: false,
+      documentRows,
+      noDocuments: documentRows.length === 0,
+      showDemoDocuments: false,
+      cells,
+      weekEvents,
+      noWeekEvents: weekEvents.length === 0,
+      showDemoCalendarEvents: false,
+      nextDeadline,
+      todayLabel: now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' }),
+      calendarTitle: now.toLocaleDateString('en-US', { month:'long', year:'numeric' })
+    };
+  }
+}
+</script>
+</body>
+</html>
