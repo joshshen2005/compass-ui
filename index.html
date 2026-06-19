@@ -75,7 +75,10 @@
     <div style="display:flex;flex-direction:column;gap:14px;margin-top:28px;">
       <label style="display:block;">
         <span style="display:block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9a9079;margin-bottom:7px;">Student ID</span>
-        <input value="{{ draftStudentId }}" onChange="{{ setDraftStudentId }}" style="width:100%;padding:12px 13px;border:1px solid #d8d0bd;border-radius:11px;background:#fff;font-family:'Hanken Grotesk';font-size:14.5px;color:#211E18;outline:none;" style-focus="border-color:#15795A;box-shadow:0 0 0 3px rgba(21,121,90,.13);" />
+        <div onClick="{{ copyStudentId }}" title="Copy Student ID" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 13px;border:1px solid #d8d0bd;border-radius:11px;background:#fff;font-family:'Hanken Grotesk';font-size:14.5px;color:#211E18;cursor:pointer;">
+          <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ studentId }}</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9a9079" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        </div>
       </label>
       <label style="display:block;">
         <span style="display:block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9a9079;margin-bottom:7px;">Azure Function key</span>
@@ -102,7 +105,7 @@
 </div>
 </sc-if>
 
-<sc-if value="{{ appReady }}" hint-placeholder-val="{{ true }}">
+<sc-if value="{{ appReady }}" hint-placeholder-val="{{ false }}">
 <div style="display:flex;min-height:100vh;width:100%;background:#EFEAE0;color:#211E18;">
 
   <aside style="width:262px;flex:none;height:100vh;position:sticky;top:0;padding:26px 18px 22px;display:flex;flex-direction:column;background:#F4F0E6;border-right:1px solid #E2DBCB;">
@@ -140,15 +143,11 @@
       </button>
     </nav>
 
-    <div style="margin-top:18px;padding:14px;border:1px solid #E2DBCB;border-radius:16px;background:#FBF9F3;">
+    <div style="display:none;margin-top:18px;padding:14px;border:1px solid #E2DBCB;border-radius:16px;background:#FBF9F3;">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;">
         <span style="font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#9a9079;">API Sync</span>
         <span style="{{ apiStatusStyle }}">{{ apiStatusLabel }}</span>
       </div>
-      <label style="display:block;margin-bottom:10px;">
-        <span style="display:block;font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#b0a78f;margin-bottom:5px;">Student ID</span>
-        <input value="{{ draftStudentId }}" onChange="{{ setDraftStudentId }}" style="width:100%;padding:9px 10px;border:1px solid #d8d0bd;border-radius:10px;background:#fff;font-family:'Hanken Grotesk';font-size:12.5px;color:#211E18;outline:none;" />
-      </label>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px;padding:9px 10px;border:1px solid #e3dccb;border-radius:10px;background:#fff;">
         <span style="font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#b0a78f;">Function key</span>
         <span style="font-size:11.5px;font-weight:700;color:#15795A;white-space:nowrap;">Built in for testing</span>
@@ -163,7 +162,10 @@
       <div style="width:38px;height:38px;flex:none;border-radius:50%;background:#15795A;color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Hanken Grotesk';font-weight:700;font-size:14px;letter-spacing:.02em;">{{ initials }}</div>
       <div style="min-width:0;flex:1;">
         <div style="font-size:13.5px;font-weight:600;color:#211E18;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ studentName }}</div>
-        <div style="font-size:11.5px;color:#9a9079;">View profile</div>
+        <div onClick="{{ copyStudentId }}" title="Copy Student ID" style="margin-top:3px;display:inline-flex;align-items:center;gap:5px;max-width:100%;font-size:11.5px;color:#9a9079;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          <span style="overflow:hidden;text-overflow:ellipsis;">{{ studentId }}</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9a9079" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+        </div>
       </div>
     </button>
     <button onClick="{{ doLogout }}" style="margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px 12px;border:1px solid #E2DBCB;border-radius:13px;background:#FBF9F3;color:#BE6A42;font-family:'Hanken Grotesk';font-size:13px;font-weight:600;cursor:pointer;">
@@ -391,34 +393,6 @@
               <div style="padding:24px;text-align:center;border:1px dashed #D8D0BD;border-radius:16px;background:#FBF9F3;color:#9a9079;font-size:14px;">No documents recorded yet.</div>
             </sc-if>
 
-            <sc-if value="{{ showDemoDocuments }}" hint-placeholder-val="{{ false }}">
-
-            <div style="display:flex;align-items:center;gap:15px;padding:15px 17px;background:#FBF9F3;border:1px solid #E2DBCB;border-radius:15px;">
-              <div style="width:42px;height:42px;flex:none;border-radius:11px;background:#F3E3D9;color:#BE6A42;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;letter-spacing:.04em;">PDF</div>
-              <div style="flex:1;min-width:0;"><div style="font-size:14.5px;font-weight:600;color:#211E18;">Resume_2026.pdf</div><div style="font-size:12px;color:#a59c84;margin-top:2px;">210 KB · Uploaded Jun 12</div></div>
-              <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#15795A;background:#E7EFE4;padding:5px 11px;border-radius:99px;">Read by agent</span>
-            </div>
-
-            <div style="display:flex;align-items:center;gap:15px;padding:15px 17px;background:#FBF9F3;border:1px solid #E2DBCB;border-radius:15px;">
-              <div style="width:42px;height:42px;flex:none;border-radius:11px;background:#F3E3D9;color:#BE6A42;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;letter-spacing:.04em;">PDF</div>
-              <div style="flex:1;min-width:0;"><div style="font-size:14.5px;font-weight:600;color:#211E18;">Transcript_Fall2025.pdf</div><div style="font-size:12px;color:#a59c84;margin-top:2px;">486 KB · Uploaded Jun 12</div></div>
-              <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#15795A;background:#E7EFE4;padding:5px 11px;border-radius:99px;">Read by agent</span>
-            </div>
-
-            <div style="display:flex;align-items:center;gap:15px;padding:15px 17px;background:#FBF9F3;border:1px solid #E2DBCB;border-radius:15px;">
-              <div style="width:42px;height:42px;flex:none;border-radius:11px;background:#E7EFE4;color:#15795A;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;letter-spacing:.04em;">PDF</div>
-              <div style="flex:1;min-width:0;"><div style="font-size:14.5px;font-weight:600;color:#211E18;">Portfolio_MayaChen.pdf</div><div style="font-size:12px;color:#a59c84;margin-top:2px;">8.2 MB · Uploaded Jun 13</div></div>
-              <span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#15795A;background:#E7EFE4;padding:5px 11px;border-radius:99px;">Read by agent</span>
-            </div>
-
-            <div style="display:flex;align-items:center;gap:15px;padding:15px 17px;background:#FBF9F3;border:1px solid #E2DBCB;border-radius:15px;">
-              <div style="width:42px;height:42px;flex:none;border-radius:11px;background:#EFE7F2;color:#7d5a92;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;letter-spacing:.03em;">DOCX</div>
-              <div style="flex:1;min-width:0;"><div style="font-size:14.5px;font-weight:600;color:#211E18;">CogSci_Capstone.docx</div><div style="font-size:12px;color:#a59c84;margin-top:2px;">1.1 MB · Uploaded just now</div></div>
-              <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#C99A3A;background:#F5ECD6;padding:5px 11px;border-radius:99px;">Processing…</span>
-            </div>
-
-            </sc-if>
-
           </div>
         </div>
       </div>
@@ -459,88 +433,6 @@
 
         <sc-if value="{{ noPlanItems }}" hint-placeholder-val="{{ false }}">
           <div style="grid-column:1/-1;padding:36px;text-align:center;border:1px dashed #D8D0BD;border-radius:20px;background:#FBF9F3;color:#9a9079;font-size:14.5px;">No future plan items yet.</div>
-        </sc-if>
-
-        <sc-if value="{{ showDemoPlanItems }}" hint-placeholder-val="{{ false }}">
-
-        <article style="background:#FBF9F3;border:1px solid #E2DBCB;border-radius:20px;padding:22px;display:flex;flex-direction:column;box-shadow:0 16px 38px -32px rgba(40,50,30,.55);">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-            <span style="font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#15795A;background:#E7EFE4;padding:5px 11px;border-radius:7px;">Opportunity</span>
-            <span style="font-size:12.5px;color:#a59c84;">Jun 14</span>
-          </div>
-          <h3 style="font-family:'Newsreader',serif;font-weight:500;font-size:21px;line-height:1.22;margin:0 0 9px;color:#211E18;">Google UX Research internship — applications open</h3>
-          <p style="font-size:14px;color:#79715f;line-height:1.55;margin:0 0 18px;">Matches your UX goal and your portfolio. Summer 2027 cohort, applications close Jun 20. Compass drafted talking points for you.</p>
-          <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:15px;border-top:1px solid #ece5d5;">
-            <span style="font-size:12px;color:#9a9079;display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#C99A3A"><path d="M12 2l2.2 6.8H21l-5.5 4 2.1 6.8L12 15.6 6.4 19.6l2.1-6.8L3 8.8h6.8z"></path></svg>From your chat · Jun 14</span>
-            <button style="padding:7px 12px;border:1px solid #15795A;border-radius:9px;background:#fff;color:#15795A;font-family:'Hanken Grotesk';font-size:12.5px;font-weight:600;cursor:pointer;">＋ To-Do</button>
-          </div>
-        </article>
-
-        <article style="background:#FBF9F3;border:1px solid #E2DBCB;border-radius:20px;padding:22px;display:flex;flex-direction:column;box-shadow:0 16px 38px -32px rgba(40,50,30,.55);">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-            <span style="font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#BE6A42;background:#F3E3D9;padding:5px 11px;border-radius:7px;">Deadline</span>
-            <span style="font-size:12.5px;color:#a59c84;">Jun 14</span>
-          </div>
-          <h3 style="font-family:'Newsreader',serif;font-weight:500;font-size:21px;line-height:1.22;margin:0 0 9px;color:#211E18;">NSF GRFP — graduate fellowship window</h3>
-          <p style="font-size:14px;color:#79715f;line-height:1.55;margin:0 0 18px;">You mentioned grad school. The fellowship funds 3 years; an info session is on Jun 22. Worth a personal statement draft soon.</p>
-          <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:15px;border-top:1px solid #ece5d5;">
-            <span style="font-size:12px;color:#9a9079;display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#C99A3A"><path d="M12 2l2.2 6.8H21l-5.5 4 2.1 6.8L12 15.6 6.4 19.6l2.1-6.8L3 8.8h6.8z"></path></svg>From your chat · Jun 14</span>
-            <button style="padding:7px 12px;border:1px solid #15795A;border-radius:9px;background:#fff;color:#15795A;font-family:'Hanken Grotesk';font-size:12.5px;font-weight:600;cursor:pointer;">＋ To-Do</button>
-          </div>
-        </article>
-
-        <article style="background:#FBF9F3;border:1px solid #E2DBCB;border-radius:20px;padding:22px;display:flex;flex-direction:column;box-shadow:0 16px 38px -32px rgba(40,50,30,.55);">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-            <span style="font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#C99A3A;background:#F5ECD6;padding:5px 11px;border-radius:7px;">Networking</span>
-            <span style="font-size:12.5px;color:#a59c84;">Jun 13</span>
-          </div>
-          <h3 style="font-family:'Newsreader',serif;font-weight:500;font-size:21px;line-height:1.22;margin:0 0 9px;color:#211E18;">Coffee chat with a Berkeley alum at Airbnb</h3>
-          <p style="font-size:14px;color:#79715f;line-height:1.55;margin:0 0 18px;">Compass found a product designer who studied Cog Sci like you. They're open to a 20-minute chat — suggested Jun 18.</p>
-          <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:15px;border-top:1px solid #ece5d5;">
-            <span style="font-size:12px;color:#9a9079;display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#C99A3A"><path d="M12 2l2.2 6.8H21l-5.5 4 2.1 6.8L12 15.6 6.4 19.6l2.1-6.8L3 8.8h6.8z"></path></svg>From your chat · Jun 13</span>
-            <button style="padding:7px 12px;border:1px solid #15795A;border-radius:9px;background:#fff;color:#15795A;font-family:'Hanken Grotesk';font-size:12.5px;font-weight:600;cursor:pointer;">＋ To-Do</button>
-          </div>
-        </article>
-
-        <article style="background:#FBF9F3;border:1px solid #E2DBCB;border-radius:20px;padding:22px;display:flex;flex-direction:column;box-shadow:0 16px 38px -32px rgba(40,50,30,.55);">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-            <span style="font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#15795A;background:#E7EFE4;padding:5px 11px;border-radius:7px;">Learning</span>
-            <span style="font-size:12.5px;color:#a59c84;">Jun 12</span>
-          </div>
-          <h3 style="font-family:'Newsreader',serif;font-weight:500;font-size:21px;line-height:1.22;margin:0 0 9px;color:#211E18;">Short course: Design Research Methods</h3>
-          <p style="font-size:14px;color:#79715f;line-height:1.55;margin:0 0 18px;">A 4-week course to strengthen the research side of your portfolio before internship interviews. Free with your .edu email.</p>
-          <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:15px;border-top:1px solid #ece5d5;">
-            <span style="font-size:12px;color:#9a9079;display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#C99A3A"><path d="M12 2l2.2 6.8H21l-5.5 4 2.1 6.8L12 15.6 6.4 19.6l2.1-6.8L3 8.8h6.8z"></path></svg>From your chat · Jun 12</span>
-            <button style="padding:7px 12px;border:1px solid #15795A;border-radius:9px;background:#fff;color:#15795A;font-family:'Hanken Grotesk';font-size:12.5px;font-weight:600;cursor:pointer;">＋ To-Do</button>
-          </div>
-        </article>
-
-        <article style="background:#FBF9F3;border:1px solid #E2DBCB;border-radius:20px;padding:22px;display:flex;flex-direction:column;box-shadow:0 16px 38px -32px rgba(40,50,30,.55);">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-            <span style="font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#C99A3A;background:#F5ECD6;padding:5px 11px;border-radius:7px;">Event</span>
-            <span style="font-size:12.5px;color:#a59c84;">Jun 11</span>
-          </div>
-          <h3 style="font-family:'Newsreader',serif;font-weight:500;font-size:21px;line-height:1.22;margin:0 0 9px;color:#211E18;">Figma Config 2026 — free student tickets</h3>
-          <p style="font-size:14px;color:#79715f;line-height:1.55;margin:0 0 18px;">A chance to meet designers and see real product work. On Jun 25. Compass can add prep notes the day before.</p>
-          <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:15px;border-top:1px solid #ece5d5;">
-            <span style="font-size:12px;color:#9a9079;display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#C99A3A"><path d="M12 2l2.2 6.8H21l-5.5 4 2.1 6.8L12 15.6 6.4 19.6l2.1-6.8L3 8.8h6.8z"></path></svg>From your chat · Jun 11</span>
-            <button style="padding:7px 12px;border:1px solid #15795A;border-radius:9px;background:#fff;color:#15795A;font-family:'Hanken Grotesk';font-size:12.5px;font-weight:600;cursor:pointer;">＋ To-Do</button>
-          </div>
-        </article>
-
-        <article style="background:#FBF9F3;border:1px solid #E2DBCB;border-radius:20px;padding:22px;display:flex;flex-direction:column;box-shadow:0 16px 38px -32px rgba(40,50,30,.55);">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-            <span style="font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#BE6A42;background:#F3E3D9;padding:5px 11px;border-radius:7px;">Action</span>
-            <span style="font-size:12.5px;color:#a59c84;">Jun 10</span>
-          </div>
-          <h3 style="font-family:'Newsreader',serif;font-weight:500;font-size:21px;line-height:1.22;margin:0 0 9px;color:#211E18;">Reach out to Prof. Alvarez about the HCI lab</h3>
-          <p style="font-size:14px;color:#79715f;line-height:1.55;margin:0 0 18px;">Research experience would strengthen grad applications. Her office hours are Jun 17 — Compass drafted an intro email.</p>
-          <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:15px;border-top:1px solid #ece5d5;">
-            <span style="font-size:12px;color:#9a9079;display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#C99A3A"><path d="M12 2l2.2 6.8H21l-5.5 4 2.1 6.8L12 15.6 6.4 19.6l2.1-6.8L3 8.8h6.8z"></path></svg>From your chat · Jun 10</span>
-            <button style="padding:7px 12px;border:1px solid #15795A;border-radius:9px;background:#fff;color:#15795A;font-family:'Hanken Grotesk';font-size:12.5px;font-weight:600;cursor:pointer;">＋ To-Do</button>
-          </div>
-        </article>
-
         </sc-if>
 
       </div>
@@ -642,24 +534,6 @@
             <sc-if value="{{ noWeekEvents }}" hint-placeholder-val="{{ false }}">
               <div style="grid-column:1/-1;padding:24px;text-align:center;border:1px dashed #D8D0BD;border-radius:16px;background:#FBF9F3;color:#9a9079;font-size:14px;">No calendar events this week.</div>
             </sc-if>
-            <sc-if value="{{ showDemoCalendarEvents }}" hint-placeholder-val="{{ false }}">
-            <div style="display:flex;gap:14px;align-items:flex-start;background:#FBF9F3;border:1px solid #E2DBCB;border-left:3px solid #15795A;border-radius:16px;padding:15px 17px;">
-              <div style="text-align:center;flex:none;"><div style="font-size:10.5px;color:#a59c84;font-weight:700;letter-spacing:.05em;">JUN</div><div style="font-family:'Newsreader',serif;font-size:26px;color:#211E18;line-height:1;">17</div></div>
-              <div style="min-width:0;"><div style="font-size:14px;font-weight:600;color:#2c2820;line-height:1.3;">Prof. Alvarez office hours</div><div style="font-size:12px;color:#a59c84;margin-top:4px;">2:00 PM · HCI Lab</div></div>
-            </div>
-            <div style="display:flex;gap:14px;align-items:flex-start;background:#FBF9F3;border:1px solid #E2DBCB;border-left:3px solid #15795A;border-radius:16px;padding:15px 17px;">
-              <div style="text-align:center;flex:none;"><div style="font-size:10.5px;color:#a59c84;font-weight:700;letter-spacing:.05em;">JUN</div><div style="font-family:'Newsreader',serif;font-size:26px;color:#211E18;line-height:1;">18</div></div>
-              <div style="min-width:0;"><div style="font-size:14px;font-weight:600;color:#2c2820;line-height:1.3;">Coffee chat · Airbnb alum</div><div style="font-size:12px;color:#a59c84;margin-top:4px;">11:00 AM · Virtual</div></div>
-            </div>
-            <div style="display:flex;gap:14px;align-items:flex-start;background:#FBF9F3;border:1px solid #E2DBCB;border-left:3px solid #BE6A42;border-radius:16px;padding:15px 17px;">
-              <div style="text-align:center;flex:none;"><div style="font-size:10.5px;color:#a59c84;font-weight:700;letter-spacing:.05em;">JUN</div><div style="font-family:'Newsreader',serif;font-size:26px;color:#BE6A42;line-height:1;">20</div></div>
-              <div style="min-width:0;"><div style="font-size:14px;font-weight:600;color:#2c2820;line-height:1.3;">Google application due</div><div style="font-size:12px;color:#BE6A42;margin-top:4px;font-weight:600;">11:59 PM · Deadline</div></div>
-            </div>
-            <div style="display:flex;gap:14px;align-items:flex-start;background:#FBF9F3;border:1px solid #E2DBCB;border-left:3px solid #C99A3A;border-radius:16px;padding:15px 17px;">
-              <div style="text-align:center;flex:none;"><div style="font-size:10.5px;color:#a59c84;font-weight:700;letter-spacing:.05em;">JUN</div><div style="font-family:'Newsreader',serif;font-size:26px;color:#211E18;line-height:1;">22</div></div>
-              <div style="min-width:0;"><div style="font-size:14px;font-weight:600;color:#2c2820;line-height:1.3;">NSF GRFP info session</div><div style="font-size:12px;color:#a59c84;margin-top:4px;">4:00 PM · Online</div></div>
-            </div>
-            </sc-if>
           </div>
         </div>
 
@@ -728,70 +602,47 @@ class Component extends DCLogic {
 
   defaultProfile() {
     return {
-      id: 'demo-student-001',
-      studentId: 'demo-student-001',
-      name: 'Maya Chen',
-      year: 'Year 2 \u00b7 Sophomore',
-      major: 'Cognitive Science',
-      school: 'UC Berkeley',
-      goal: 'UX Research / Product',
-      track: 'Internship + grad school',
-      location: 'Berkeley, CA',
-      completenessPct: 82
+      id: '',
+      studentId: '',
+      name: 'Student',
+      year: '',
+      major: '',
+      school: '',
+      goal: '',
+      track: '',
+      location: '',
+      completenessPct: 0
     };
   }
 
   defaultTodos() {
-    return [
-      { id:'task-1', text:'Submit Google UX Research application', group:'This week', tag:'Application', done:false, pri:'high', dueDate:'2026-06-20' },
-      { id:'task-2', text:'Email Prof. Alvarez about the HCI lab', group:'This week', tag:'Networking', done:false, pri:'med', dueDate:'2026-06-17' },
-      { id:'task-3', text:'Finish portfolio case study #2', group:'This week', tag:'Portfolio', done:true, pri:'high' },
-      { id:'task-4', text:'Draft grad-school personal statement', group:'This month', tag:'Writing', done:false, pri:'med' },
-      { id:'task-5', text:'Mock interview with Career Center', group:'This month', tag:'Prep', done:false, pri:'med' },
-      { id:'task-6', text:'Refresh LinkedIn and resume', group:'This month', tag:'Profile', done:true, pri:'low' },
-      { id:'task-7', text:'Research 5 HCI master\u2019s programs', group:'Later', tag:'Research', done:false, pri:'low' },
-      { id:'task-8', text:'Build one portfolio side-project', group:'Later', tag:'Portfolio', done:false, pri:'low' }
-    ];
+    return [];
   }
 
   defaultPlanItems() {
-    return [
-      { id:'plan-1', title:'Google UX Research internship — applications open', category:'Opportunity', priority:'high', description:'Matches your UX goal and portfolio. Applications close Jun 20.', date:'2026-06-14', source:'demo' },
-      { id:'plan-2', title:'NSF GRFP — graduate fellowship window', category:'Deadline', priority:'high', description:'You mentioned grad school. The fellowship info session is on Jun 22.', date:'2026-06-14', source:'demo' },
-      { id:'plan-3', title:'Coffee chat with a Berkeley alum at Airbnb', category:'Networking', priority:'medium', description:'A product designer with a Cog Sci path is open to a 20-minute chat.', date:'2026-06-13', source:'demo' },
-      { id:'plan-4', title:'Short course: Design Research Methods', category:'Learning', priority:'medium', description:'A 4-week course to strengthen the research side of your portfolio.', date:'2026-06-12', source:'demo' }
-    ];
+    return [];
   }
 
   defaultDocuments() {
-    return [
-      { id:'doc-1', name:'Resume_2026.pdf', type:'PDF', size:210000, status:'read', createdAt:'2026-06-12T09:00:00Z' },
-      { id:'doc-2', name:'Transcript_Fall2025.pdf', type:'PDF', size:486000, status:'read', createdAt:'2026-06-12T10:00:00Z' },
-      { id:'doc-3', name:'Portfolio_MayaChen.pdf', type:'PDF', size:8200000, status:'read', createdAt:'2026-06-13T11:00:00Z' }
-    ];
+    return [];
   }
 
   defaultEvents() {
-    return [
-      { id:'event-1', label:'Office hours', title:'Prof. Alvarez office hours', date:'2026-06-17', type:'session', location:'HCI Lab' },
-      { id:'event-2', label:'Coffee chat', title:'Coffee chat · Airbnb alum', date:'2026-06-18', type:'session', location:'Virtual' },
-      { id:'event-3', label:'Google app due', title:'Google application due', date:'2026-06-20', type:'deadline', location:'11:59 PM' },
-      { id:'event-4', label:'GRFP session', title:'NSF GRFP info session', date:'2026-06-22', type:'event', location:'Online' }
-    ];
+    return [];
   }
 
   state = {
     agentConnected: true,
     authStatus: 'checking',
-    studentId: this.readStored('compass-student-id', 'demo-student-001'),
+    studentId: this.readStored('compass-student-id', ''),
     functionKey: this.readFunctionKey(),
-    draftStudentId: this.readStored('compass-student-id', 'demo-student-001'),
+    draftStudentId: this.readStored('compass-student-id', ''),
     draftFunctionKey: this.readFunctionKey(),
     setupMessage: '',
     documentUploadMessage: '',
     apiLoading: false,
     apiError: '',
-    dataSource: 'demo',
+    dataSource: 'empty',
     page: 'home',
     agentOpen: false,
     editing: false,
@@ -811,7 +662,7 @@ class Component extends DCLogic {
   async initMicrosoftLogin() {
     const CLIENT_ID = '786d2a41-be52-4051-aaef-176f7d87daa6';
     const TENANT_ID = 'common';
-    const USE_DEMO_STUDENT_ID = false;
+    const USE_LOCAL_PREVIEW_STUDENT_ID = false;
 
     // 👇 新增:打印完整网址,看看微软回传了什么
     console.log('[Compass] 完整网址 =', window.location.href);
@@ -859,13 +710,33 @@ class Component extends DCLogic {
     }
 
     console.log('[Compass] 登录成功:', account.username);
-    this.onLoginSuccess(account, USE_DEMO_STUDENT_ID);
+    this.onLoginSuccess(account, USE_LOCAL_PREVIEW_STUDENT_ID);
   }
 
-  onLoginSuccess(account, useDemo) {
+  microsoftAccountSubject(account) {
     const claims = account.idTokenClaims || {};
-    const realId = claims.oid || account.username || account.homeAccountId;
-    const studentId = useDemo ? 'demo-student-001' : realId;
+    if (claims.tid && claims.oid) return 'microsoft:' + claims.tid + ':' + claims.oid;
+    return 'microsoft:' + (account.homeAccountId || claims.oid || account.username || '');
+  }
+
+  stableStudentCode(value) {
+    const text = String(value || 'unknown').trim().toLowerCase();
+    let hash = 1469598103934665603n;
+    const prime = 1099511628211n;
+    for (let i = 0; i < text.length; i++) {
+      hash ^= BigInt(text.charCodeAt(i));
+      hash = BigInt.asUintN(64, hash * prime);
+    }
+    return hash.toString(36).toUpperCase().padStart(13, '0');
+  }
+
+  studentIdForMicrosoftAccount(account, useLocalPreview) {
+    if (useLocalPreview) return 'CS-' + this.stableStudentCode('local-preview-student');
+    return 'CS-' + this.stableStudentCode(this.microsoftAccountSubject(account));
+  }
+
+  onLoginSuccess(account, useLocalPreview) {
+    const studentId = this.studentIdForMicrosoftAccount(account, useLocalPreview);
 
     this.writeStored('compass-student-id', studentId);
     this.setState({
@@ -905,7 +776,7 @@ class Component extends DCLogic {
       setupMessage: '',
       documentUploadMessage: '',
       apiError: '',
-      dataSource: 'demo',
+        dataSource: 'empty',
       page: 'home',
       agentOpen: false,
       editing: false,
@@ -987,13 +858,13 @@ class Component extends DCLogic {
       this.setState({
         apiLoading: false,
         apiError: error.message || 'Could not sync data.',
-        dataSource: 'demo'
+        dataSource: 'empty'
       });
     }
   }
 
   saveWorkspaceSetup() {
-    const studentId = String(this.state.draftStudentId || '').trim();
+    const studentId = String(this.state.studentId || this.state.draftStudentId || '').trim();
     const functionKey = String(this.state.draftFunctionKey || this.defaultFunctionKey()).trim();
 
     if (!studentId) {
@@ -1019,8 +890,33 @@ class Component extends DCLogic {
       functionKey: this.defaultFunctionKey(),
       draftFunctionKey: this.defaultFunctionKey(),
       setupMessage: 'Using the built-in test Function key.',
-      dataSource: 'demo'
+      dataSource: 'empty'
     });
+  }
+
+  async copyStudentId(event) {
+    if (event && event.stopPropagation) event.stopPropagation();
+    const studentId = String(this.state.studentId || '').trim();
+    if (!studentId) return;
+
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(studentId);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = studentId;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      this.setState({ setupMessage: 'Student ID copied.' });
+    } catch (error) {
+      this.setState({ setupMessage: 'Could not copy Student ID.' });
+    }
   }
 
   nav(p) { return () => this.setState({ page: p }); }
@@ -1343,6 +1239,7 @@ class Component extends DCLogic {
     const weekEvents = this.weekEvents(this.state.calendarEvents || []);
     const now = new Date();
     const nextDeadline = this.decorateDeadline(this.state.nextDeadline || this.deriveNextDeadline());
+    const studentMajor = [this.clean(p.major), this.clean(p.school)].filter(Boolean).join(' \u00b7 ');
 
     return {
       page,
@@ -1357,6 +1254,7 @@ class Component extends DCLogic {
       studentId: this.state.studentId,
       draftStudentId: this.state.draftStudentId,
       draftFunctionKey: this.state.draftFunctionKey,
+      copyStudentId: (e) => this.copyStudentId(e),
       setDraftStudentId: (e) => this.setDraftStudentId(e),
       setDraftFunctionKey: (e) => this.setDraftFunctionKey(e),
       setupMessage: this.state.setupMessage || this.state.apiError,
@@ -1364,13 +1262,13 @@ class Component extends DCLogic {
       recordSelectedDocuments: (e) => this.recordSelectedDocuments(e),
       handleDocumentDragOver: (e) => this.handleDocumentDragOver(e),
       handleDocumentDrop: (e) => this.handleDocumentDrop(e),
-      apiStatusLabel: this.state.apiLoading ? 'Syncing' : (this.state.dataSource === 'live' ? 'Live' : 'Demo'),
+      apiStatusLabel: this.state.apiLoading ? 'Syncing' : (this.state.dataSource === 'live' ? 'Live' : 'Empty'),
       apiStatusStyle: 'font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:99px;color:' + (this.state.dataSource === 'live' ? '#15795A' : '#9a9079') + ';background:' + (this.state.dataSource === 'live' ? '#E7EFE4' : '#f1ece0') + ';',
       saveWorkspaceSetup: () => this.saveWorkspaceSetup(),
       refreshData: () => this.loadAllData(),
       studentName: name,
       firstName: name.split(/\s+/)[0] || name,
-      studentMajor: this.clean(p.major) + ' \u00b7 ' + this.clean(p.school),
+      studentMajor,
       initials,
       profile: p,
       profileCompleteness,
@@ -1396,14 +1294,11 @@ class Component extends DCLogic {
       homePlanItems: planCards.slice(0, 5),
       agentHighlights: planCards.slice(0, 2),
       noPlanItems: planCards.length === 0,
-      showDemoPlanItems: false,
       documentRows,
       noDocuments: documentRows.length === 0,
-      showDemoDocuments: false,
       cells,
       weekEvents,
       noWeekEvents: weekEvents.length === 0,
-      showDemoCalendarEvents: false,
       nextDeadline,
       todayLabel: now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' }),
       calendarTitle: now.toLocaleDateString('en-US', { month:'long', year:'numeric' })
