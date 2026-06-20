@@ -676,6 +676,11 @@ class Component extends DCLogic {
     const TENANT_ID = 'common';
     const USE_LOCAL_PREVIEW_STUDENT_ID = false;
 
+    if (this.isLocalTestMode()) {
+      this.useLocalTestAccount();
+      return;
+    }
+
     // 👇 新增:打印完整网址,看看微软回传了什么
     console.log('[Compass] 完整网址 =', window.location.href);
     console.log('[Compass] hash =', window.location.hash);
@@ -725,6 +730,36 @@ class Component extends DCLogic {
     await this.onLoginSuccess(account, USE_LOCAL_PREVIEW_STUDENT_ID);
   }
 
+  isLocalTestMode() {
+    const host = window.location.hostname;
+    const localHost = host === '127.0.0.1' || host === 'localhost';
+    return localHost && new URLSearchParams(window.location.search).get('localTest') === '1';
+  }
+
+  useLocalTestAccount() {
+    const studentId = 'CS-0JXVCBIXQ2PB2';
+    const email = 'henrydhx323@outlook.com';
+    const functionKey = this.defaultFunctionKey();
+
+    this.writeStored('compass-student-id', studentId);
+    this.writeStored('compass-student-email', email);
+    this.writeStored('compass-function-key', functionKey);
+
+    const localTestState = {
+      authStatus: 'loggedIn',
+      studentId,
+      studentEmail: email,
+      functionKey,
+      draftStudentId: studentId,
+      draftFunctionKey: functionKey,
+      setupMessage: ''
+    };
+
+    this.state = { ...this.state, ...localTestState };
+    this.setState(localTestState);
+    window.setTimeout(() => this.loadAllData(), 50);
+  }
+
   microsoftAccountSubject(account) {
     const claims = account.idTokenClaims || {};
     if (claims.tid && claims.oid) return 'microsoft:' + claims.tid + ':' + claims.oid;
@@ -747,20 +782,81 @@ class Component extends DCLogic {
     return 'CS-' + this.stableStudentCode(this.microsoftAccountSubject(account));
   }
 
-  microsoftIdentityPayload(account, useLocalPreview) {
+  studentIdFromMicrosoftProfile(claims = {}, graphProfile = {}) {
+    const exactClaimNames = [
+      'studentId',
+      'student_id',
+      'studentNumber',
+      'student_number',
+      'employeeId',
+      'employee_id'
+    ];
+    const sources = [claims, graphProfile];
+
+    for (const source of sources) {
+      for (const name of exactClaimNames) {
+        const value = String(source?.[name] || '').trim();
+        if (value) return value;
+      }
+    }
+
+    const suffixes = ['studentid', 'studentnumber', 'employeeid'];
+    for (const source of sources) {
+      for (const [name, value] of Object.entries(source || {})) {
+        const normalized = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (suffixes.some((suffix) => normalized.endsWith(suffix))) {
+          const text = String(value || '').trim();
+          if (text) return text;
+        }
+      }
+    }
+
+    return '';
+  }
+
+  async loadMicrosoftGraphProfile(account) {
+    if (!this._pca || !account) return {};
+
+    try {
+      const token = await this._pca.acquireTokenSilent({
+        account,
+        scopes: ['User.Read']
+      });
+      const res = await fetch('https://graph.microsoft.com/v1.0/me?$select=id,displayName,mail,userPrincipalName,employeeId', {
+        headers: { Authorization: 'Bearer ' + token.accessToken }
+      });
+      if (!res.ok) {
+        console.log('[Compass] Microsoft Graph profile unavailable:', res.status);
+        return {};
+      }
+      return await res.json();
+    } catch (error) {
+      console.log('[Compass] Microsoft Graph profile unavailable:', error.message || error);
+      return {};
+    }
+  }
+
+  microsoftIdentityPayload(account, useLocalPreview, graphProfile = {}) {
     const claims = account.idTokenClaims || {};
-    const email = claims.preferred_username || claims.email || account.username || '';
+    const email = claims.preferred_username || claims.email || graphProfile.mail || graphProfile.userPrincipalName || account.username || '';
+    const directoryStudentId = this.studentIdFromMicrosoftProfile(claims, graphProfile);
+    const suggestedStudentId = this.studentIdForMicrosoftAccount(account, useLocalPreview);
     return {
       email,
       microsoftOid: claims.oid || '',
       microsoftTenantId: claims.tid || '',
+      microsoftGraphId: graphProfile.id || '',
       authProvider: 'microsoft',
-      studentId: this.studentIdForMicrosoftAccount(account, useLocalPreview)
+      microsoftStudentId: directoryStudentId,
+      directoryStudentId,
+      suggestedStudentId,
+      studentId: directoryStudentId || suggestedStudentId
     };
   }
 
   async onLoginSuccess(account, useLocalPreview) {
-    const identity = this.microsoftIdentityPayload(account, useLocalPreview);
+    const graphProfile = await this.loadMicrosoftGraphProfile(account);
+    const identity = this.microsoftIdentityPayload(account, useLocalPreview, graphProfile);
     let studentId = identity.studentId;
 
     if (this.state.functionKey && identity.email) {
@@ -855,7 +951,7 @@ class Component extends DCLogic {
     const res = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'text/plain'
       },
       body: JSON.stringify({ studentId: this.state.studentId, email: this.state.studentEmail, ...body })
     });
