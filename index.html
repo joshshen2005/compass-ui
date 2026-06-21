@@ -21,6 +21,32 @@
   ::-webkit-scrollbar-thumb{background:#dcd4c1;border-radius:99px;border:3px solid #EFEAE0;}
   @keyframes haloPulse{0%,100%{transform:scale(1);opacity:.5;}50%{transform:scale(1.14);opacity:.82;}}
   @keyframes floaty{0%,100%{transform:translateY(0);}50%{transform:translateY(-9px);}}
+  .calendar-cell:hover{overflow:visible!important;z-index:20;}
+  .calendar-event-wrap{position:relative;min-width:0;}
+  .calendar-event-popover{
+    position:absolute;
+    left:0;
+    top:calc(100% + 7px);
+    z-index:50;
+    max-width:320px;
+    min-width:min(280px,calc(100vw - 96px));
+    padding:9px 11px;
+    border:1px solid #D8D0BD;
+    border-radius:10px;
+    background:#211E18;
+    color:#FBF9F3;
+    box-shadow:0 18px 38px -24px rgba(33,30,24,.65);
+    font-size:12.5px;
+    font-weight:700;
+    line-height:1.35;
+    white-space:normal;
+    overflow-wrap:anywhere;
+    opacity:0;
+    transform:translateY(-3px);
+    pointer-events:none;
+    transition:opacity .12s ease,transform .12s ease;
+  }
+  .calendar-event-wrap:hover .calendar-event-popover{opacity:1;transform:translateY(0);}
 </style>
 </helmet>
 
@@ -367,7 +393,7 @@
         <div>
           <div style="margin-bottom:8px;">
             <h2 style="font-family:'Newsreader',serif;font-weight:500;font-size:24px;margin:0;color:#211E18;">Documents</h2>
-            <p style="font-size:14px;color:#79715f;margin:6px 0 0;">Files upload to Azure Blob Storage, with document records saved to Cosmos DB.</p>
+            <p style="font-size:14px;color:#79715f;margin:6px 0 0;">Upload TXT or MD resume files so your agent can read them from Cosmos DB.</p>
           </div>
 
           <div onDragOver="{{ handleDocumentDragOver }}" onDrop="{{ handleDocumentDrop }}" style="position:relative;border:2px dashed #cdc6b2;border-radius:20px;padding:32px;text-align:center;background:#FBF9F3;margin:18px 0 10px;cursor:pointer;overflow:hidden;">
@@ -375,17 +401,27 @@
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#15795A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"></path><path d="M5 16v3a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3"></path></svg>
             </div>
             <div style="font-size:15.5px;color:#2c2820;font-weight:600;">Drop files here, or <span style="color:#15795A;text-decoration:underline;">browse</span></div>
-            <div style="font-size:12.5px;color:#a59c84;margin-top:6px;">PDF, DOCX, PNG · up to 25 MB each</div>
-            <input type="file" multiple accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.txt" onChange="{{ recordSelectedDocuments }}" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;" />
+            <div style="font-size:12.5px;color:#a59c84;margin-top:6px;">TXT, MD · up to 25 MB each</div>
+            <input type="file" multiple accept=".txt,.md,.markdown,text/plain,text/markdown" onChange="{{ recordSelectedDocuments }}" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;" />
           </div>
           <div style="min-height:18px;margin:0 0 18px;font-size:12.5px;color:#BE6A42;">{{ documentUploadMessage }}</div>
+
+          <div style="background:#FBF9F3;border:1px solid #E2DBCB;border-radius:16px;padding:18px;margin:0 0 18px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:10px;">
+              <div>
+                <div style="font-size:13.5px;font-weight:800;color:#211E18;">Paste resume text</div>
+                <div style="font-size:12.5px;color:#9a9079;margin-top:2px;">Save plain resume content so your agent can read it.</div>
+              </div>
+              <button onClick="{{ saveResumeText }}" style="padding:9px 13px;border:none;border-radius:10px;background:#15795A;color:#fff;font-family:'Hanken Grotesk';font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;">Save text</button>
+            </div>
+            <textarea value="{{ resumeText }}" onChange="{{ setResumeText }}" placeholder="Paste resume text here..." style="width:100%;min-height:130px;resize:vertical;padding:12px 13px;border:1px solid #d8d0bd;border-radius:12px;background:#fff;font-family:'Hanken Grotesk';font-size:14px;line-height:1.45;color:#211E18;outline:none;"></textarea>
+          </div>
 
           <div style="display:flex;flex-direction:column;gap:11px;">
             <sc-for list="{{ documentRows }}" as="doc" hint-placeholder-count="4">
               <div style="display:flex;align-items:center;gap:15px;padding:15px 17px;background:#FBF9F3;border:1px solid #E2DBCB;border-radius:15px;">
                 <div style="{{ doc.typeStyle }}">{{ doc.typeLabel }}</div>
                 <div style="flex:1;min-width:0;"><div style="font-size:14.5px;font-weight:600;color:#211E18;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ doc.name }}</div><div style="font-size:12px;color:#a59c84;margin-top:2px;">{{ doc.meta }}</div></div>
-                <span style="{{ doc.statusStyle }}">{{ doc.statusLabel }}</span>
               </div>
             </sc-for>
 
@@ -405,14 +441,6 @@
         <div style="font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:#a59c84;font-weight:700;margin-bottom:9px;">Curated for you</div>
         <h1 style="font-family:'Newsreader',serif;font-weight:400;font-size:40px;line-height:1;margin:0;color:#211E18;">Future Plan</h1>
         <p style="font-size:15px;color:#79715f;margin:11px 0 0;max-width:600px;line-height:1.5;">Opportunities and reminders your agent surfaced from your conversations — your evolving roadmap, in one feed.</p>
-      </div>
-
-      <div style="display:flex;gap:9px;margin-bottom:24px;flex-wrap:wrap;">
-        <span style="padding:8px 16px;border-radius:99px;background:#15795A;color:#fff;font-size:13px;font-weight:600;">All</span>
-        <span style="padding:8px 16px;border-radius:99px;background:#FBF9F3;border:1px solid #E2DBCB;color:#79715f;font-size:13px;font-weight:500;">Opportunities</span>
-        <span style="padding:8px 16px;border-radius:99px;background:#FBF9F3;border:1px solid #E2DBCB;color:#79715f;font-size:13px;font-weight:500;">Deadlines</span>
-        <span style="padding:8px 16px;border-radius:99px;background:#FBF9F3;border:1px solid #E2DBCB;color:#79715f;font-size:13px;font-weight:500;">Networking</span>
-        <span style="padding:8px 16px;border-radius:99px;background:#FBF9F3;border:1px solid #E2DBCB;color:#79715f;font-size:13px;font-weight:500;">Learning</span>
       </div>
 
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:18px;">
@@ -508,7 +536,7 @@
       <div style="display:flex;flex-direction:column;gap:22px;">
 
         <div style="background:#FBF9F3;border:1px solid #E2DBCB;border-radius:22px;padding:22px;box-shadow:0 20px 48px -36px rgba(40,50,30,.5);">
-          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:9px;margin-bottom:10px;">
+          <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:9px;margin-bottom:10px;">
             <div style="text-align:center;font-size:11.5px;font-weight:700;letter-spacing:.06em;color:#b0a78f;text-transform:uppercase;">Sun</div>
             <div style="text-align:center;font-size:11.5px;font-weight:700;letter-spacing:.06em;color:#b0a78f;text-transform:uppercase;">Mon</div>
             <div style="text-align:center;font-size:11.5px;font-weight:700;letter-spacing:.06em;color:#b0a78f;text-transform:uppercase;">Tue</div>
@@ -517,14 +545,17 @@
             <div style="text-align:center;font-size:11.5px;font-weight:700;letter-spacing:.06em;color:#b0a78f;text-transform:uppercase;">Fri</div>
             <div style="text-align:center;font-size:11.5px;font-weight:700;letter-spacing:.06em;color:#b0a78f;text-transform:uppercase;">Sat</div>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:9px;">
+          <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:9px;">
             <sc-for list="{{ cells }}" as="c" hint-placeholder-count="35">
               <sc-if value="{{ c.blank }}" hint-placeholder-val="{{ false }}"><div style="min-height:118px;"></div></sc-if>
               <sc-if value="{{ c.day }}" hint-placeholder-val="{{ true }}">
-                <div style="{{ c.cellStyle }}">
+                <div class="calendar-cell" style="{{ c.cellStyle }}" title="{{ c.tooltip }}">
                   <span style="{{ c.numStyle }}">{{ c.day }}</span>
                   <sc-for list="{{ c.events }}" as="e" hint-placeholder-count="0">
-                    <div style="{{ e.style }}">{{ e.label }}</div>
+                    <div class="calendar-event-wrap">
+                      <div style="{{ e.style }}">{{ e.label }}</div>
+                      <div class="calendar-event-popover">{{ e.label }}</div>
+                    </div>
                   </sc-for>
                 </div>
               </sc-if>
@@ -641,6 +672,10 @@ class Component extends DCLogic {
     return [];
   }
 
+  autoRefreshIntervalMs = 20000;
+  autoRefreshTimer = null;
+  autoRefreshInFlight = false;
+
   state = {
     agentConnected: true,
     authStatus: 'checking',
@@ -651,6 +686,7 @@ class Component extends DCLogic {
     draftFunctionKey: this.readFunctionKey(),
     setupMessage: '',
     documentUploadMessage: '',
+    resumeText: '',
     apiLoading: false,
     apiError: '',
     dataSource: 'empty',
@@ -669,6 +705,11 @@ class Component extends DCLogic {
 
   componentDidMount() {
     this.initMicrosoftLogin();
+    this.startAutoRefresh();
+  }
+
+  componentWillUnmount() {
+    this.stopAutoRefresh();
   }
 
   async initMicrosoftLogin() {
@@ -968,13 +1009,10 @@ class Component extends DCLogic {
     this.setState({ apiLoading: true, apiError: '', setupMessage: '' });
 
     try {
-      const [profileRes, planRes, todoRes, calendarRes, documentRes, deadlineRes] = await Promise.all([
+      const [profileRes, planRes, todoRes] = await Promise.all([
         this.apiCall('getStudentProfile'),
         this.apiCall('listPlanItems'),
-        this.apiCall('listTodos'),
-        this.apiCall('listCalendarEvents'),
-        this.apiCall('listDocuments'),
-        this.apiCall('getNextDeadline')
+        this.apiCall('listTodos')
       ]);
 
       this.setState({
@@ -982,12 +1020,21 @@ class Component extends DCLogic {
         draft: profileRes.profile || {},
         planItems: Array.isArray(planRes.items) ? planRes.items : [],
         todos: Array.isArray(todoRes.items) ? todoRes.items : [],
-        calendarEvents: Array.isArray(calendarRes.items) ? calendarRes.items : [],
-        documents: Array.isArray(documentRes.items) ? documentRes.items : [],
-        nextDeadline: deadlineRes.deadline || null,
         apiLoading: false,
         apiError: '',
         dataSource: 'live'
+      });
+
+      const [calendarRes, documentRes, deadlineRes] = await Promise.all([
+        this.apiCall('listCalendarEvents'),
+        this.apiCall('listDocuments'),
+        this.apiCall('getNextDeadline')
+      ]);
+
+      this.setState({
+        calendarEvents: Array.isArray(calendarRes.items) ? calendarRes.items : [],
+        documents: Array.isArray(documentRes.items) ? documentRes.items : [],
+        nextDeadline: deadlineRes.deadline || null
       });
     } catch (error) {
       this.setState({
@@ -995,6 +1042,31 @@ class Component extends DCLogic {
         apiError: error.message || 'Could not sync data.',
         dataSource: 'empty'
       });
+    }
+  }
+
+  startAutoRefresh() {
+    if (this.autoRefreshTimer || typeof window === 'undefined') return;
+    this.autoRefreshTimer = window.setInterval(() => this.autoRefreshData(), this.autoRefreshIntervalMs);
+  }
+
+  stopAutoRefresh() {
+    if (!this.autoRefreshTimer || typeof window === 'undefined') return;
+    window.clearInterval(this.autoRefreshTimer);
+    this.autoRefreshTimer = null;
+  }
+
+  async autoRefreshData() {
+    if (this.autoRefreshInFlight) return;
+    if (typeof document !== 'undefined' && document.hidden) return;
+    if (this.state.authStatus !== 'loggedIn') return;
+    if (!this.state.functionKey || this.state.apiLoading || this.state.editing) return;
+
+    this.autoRefreshInFlight = true;
+    try {
+      await this.loadAllData();
+    } finally {
+      this.autoRefreshInFlight = false;
     }
   }
 
@@ -1093,13 +1165,27 @@ class Component extends DCLogic {
   }
 
   async deletePlanItem(item) {
-    this.setState(s => ({ planItems: s.planItems.filter(x => x.id !== item.id) }));
+    const title = this.clean(item.title);
+    const linkedTodo = title ? (this.state.todos || []).find(todo => this.clean(todo.text || todo.title) === title) : null;
+    const linkedCalendarEvent = title ? (this.state.calendarEvents || []).find(event => this.clean(event.title || event.label) === title) : null;
+    const linkedTodoId = linkedTodo?.id;
+    const linkedCalendarEventId = linkedCalendarEvent?.id;
+
+    this.setState(s => ({
+      planItems: s.planItems.filter(x => x.id !== item.id),
+      todos: linkedTodoId ? s.todos.filter(x => x.id !== linkedTodoId) : s.todos,
+      calendarEvents: linkedCalendarEventId ? s.calendarEvents.filter(x => x.id !== linkedCalendarEventId) : s.calendarEvents
+    }));
     if (!this.state.functionKey) return;
 
     try {
-      await this.apiCall('deletePlanItem', { planItemId: item.id });
+      const deletes = [this.apiCall('deletePlanItem', { planItemId: item.id })];
+      if (linkedTodoId) deletes.push(this.apiCall('deleteTodo', { todoId: linkedTodoId }));
+      if (linkedCalendarEventId) deletes.push(this.apiCall('deleteCalendarEvent', { calendarEventId: linkedCalendarEventId }));
+      await Promise.all(deletes);
+      await this.loadAllData();
     } catch (error) {
-      this.setState({ apiError: error.message || 'Could not delete plan item.' });
+      this.setState({ apiError: error.message || 'Could not delete linked plan item.' });
       this.loadAllData();
     }
   }
@@ -1134,41 +1220,54 @@ class Component extends DCLogic {
       return;
     }
 
-    this.setState({ documentUploadMessage: 'Uploading ' + files.length + ' document' + (files.length > 1 ? 's' : '') + '...' });
+    const unsupported = files.find(file => !this.isTextDocumentFile(file));
+    if (unsupported) {
+      this.setState({ documentUploadMessage: 'Only TXT and MD files are supported right now.' });
+      return;
+    }
+
+    this.setState({ documentUploadMessage: 'Saving ' + files.length + ' document' + (files.length > 1 ? 's' : '') + '...' });
 
     try {
       for (const file of files) {
-        const upload = await this.apiCall('createDocumentUpload', {
-          fileName: file.name,
-          type: this.documentType(file),
-          size: file.size,
-          mimeType: file.type || '',
-          source: 'web-ui'
-        });
-
-        const uploadRes = await fetch(upload.uploadUrl, {
-          method: upload.uploadMethod || 'PUT',
-          headers: upload.uploadHeaders || {
-            'x-ms-blob-type': 'BlockBlob',
-            'Content-Type': file.type || 'application/octet-stream'
-          },
-          body: file
-        });
-
-        if (!uploadRes.ok) {
-          throw new Error('Upload failed for ' + file.name + '.');
+        const text = await this.readTextDocumentFile(file);
+        if (!this.clean(text)) {
+          throw new Error(file.name + ' is empty.');
         }
 
-        await this.apiCall('completeDocumentUpload', {
-          documentId: upload.documentId
+        await this.apiCall('recordDocument', {
+          name: file.name || 'Resume text',
+          type: 'resume',
+          format: this.documentType(file),
+          size: file.size,
+          mimeType: file.type || 'text/plain',
+          status: 'processed',
+          source: 'text-file-upload',
+          extractedText: text,
+          text
         });
       }
 
-      this.setState({ documentUploadMessage: 'Uploaded. Processing for agent reading can run next.' });
+      this.setState({ documentUploadMessage: 'Saved. Your agent can read this text now.' });
       await this.loadAllData();
     } catch (error) {
       this.setState({ documentUploadMessage: error.message || 'Could not upload document.' });
     }
+  }
+
+  isTextDocumentFile(file) {
+    const type = this.documentType(file);
+    return ['txt', 'md', 'markdown'].includes(type);
+  }
+
+  readTextDocumentFile(file) {
+    if (typeof file.text === 'function') return file.text();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => reject(reader.error || new Error('Could not read file.'));
+      reader.readAsText(file);
+    });
   }
 
   documentType(file) {
@@ -1177,6 +1276,41 @@ class Component extends DCLogic {
     if (ext) return ext;
     if (file.type && file.type.includes('/')) return file.type.split('/').pop();
     return 'document';
+  }
+
+  setResumeText(e) {
+    this.setState({ resumeText: e.target.value });
+  }
+
+  async saveResumeText() {
+    const text = this.clean(this.state.resumeText);
+    if (!text) {
+      this.setState({ documentUploadMessage: 'Paste resume text before saving.' });
+      return;
+    }
+
+    if (!this.state.functionKey) {
+      this.setState({ documentUploadMessage: 'Cosmos sync is not connected yet.' });
+      return;
+    }
+
+    try {
+      this.setState({ documentUploadMessage: 'Saving resume text...' });
+      await this.apiCall('recordDocument', {
+        name: 'Resume text',
+        type: 'resume',
+        mimeType: 'text/plain',
+        size: text.length,
+        status: 'processed',
+        source: 'resume-text-paste',
+        extractedText: text,
+        text
+      });
+      this.setState({ resumeText: '', documentUploadMessage: 'Resume text saved for agent reading.' });
+      await this.loadAllData();
+    } catch (error) {
+      this.setState({ documentUploadMessage: error.message || 'Could not save resume text.' });
+    }
   }
 
   setDraftStudentId(e) { this.setState({ draftStudentId: e.target.value }); }
@@ -1192,6 +1326,43 @@ class Component extends DCLogic {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return fallback;
     return date.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  }
+
+  primaryDateValue(item = {}, includeCreatedAt = false) {
+    return this.clean(
+      item.dueDate ||
+        item.deadline ||
+        item.date ||
+        item.startDate ||
+        item.endDate ||
+        (includeCreatedAt ? item.createdAt : '')
+    );
+  }
+
+  validDate(value) {
+    const date = new Date(value || '');
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  todoTimeGroup(todo) {
+    const date = this.validDate(this.primaryDateValue(todo));
+    if (date) {
+      date.setHours(0, 0, 0, 0);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const weekEnd = new Date(today);
+      weekEnd.setDate(weekEnd.getDate() + 7);
+      const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+
+      if (date < weekEnd) return 'This week';
+      if (date < monthEnd) return 'This month';
+      return 'Long term';
+    }
+
+    const order = ['This week', 'This month', 'Long term'];
+    const group = this.clean(todo.group, 'This week');
+    if (group === 'Later') return 'Long term';
+    return order.includes(group) ? group : 'This week';
   }
 
   formatSize(value) {
@@ -1210,17 +1381,34 @@ class Component extends DCLogic {
     return { fg:'#15795A', bg:'#E7EFE4' };
   }
 
-  decoratePlanItem(item) {
+  titleKey(value) {
+    return this.clean(value).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  }
+
+  planDateValue(item, relatedItems = []) {
+    const direct = this.clean(item.dueDate || item.deadline);
+    if (direct) return direct;
+
+    const date = this.clean(item.date);
+    const createdAt = this.clean(item.createdAt);
+    if (date && date !== createdAt) return date;
+
+    const key = this.titleKey(item.title);
+    const related = relatedItems.find(entry => key && this.titleKey(entry.title || entry.text || entry.label) === key);
+    return related ? this.primaryDateValue(related) : '';
+  }
+
+  decoratePlanItem(item, relatedItems = []) {
     const category = this.clean(item.category || item.type, 'Action');
     const color = this.categoryColor(category);
-    const date = item.date || item.deadline || item.dueDate || item.createdAt;
+    const date = this.planDateValue(item, relatedItems);
     return {
       ...item,
       title: this.clean(item.title, 'Untitled plan item'),
       description: this.clean(item.description || item.reason, 'No description yet.'),
       categoryLabel: category,
       dateLabel: this.formatDate(date, 'No date'),
-      meta: (item.source || 'Agent') + ' · ' + this.formatDate(item.createdAt || date, 'recently'),
+      meta: (item.source || 'Agent') + ' · ' + this.formatDate(date || item.createdAt, 'recently'),
       dotStyle: 'width:9px;height:9px;border-radius:50%;background:' + color.fg + ';margin-top:6px;flex:none;',
       badgeStyle: 'font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:' + color.fg + ';background:' + color.bg + ';padding:5px 11px;border-radius:7px;white-space:nowrap;',
       delete: () => this.deletePlanItem(item)
@@ -1325,14 +1513,15 @@ class Component extends DCLogic {
         blank:false,
         day:d,
         key:'d' + year + '-' + month + '-' + d,
-        cellStyle: 'min-height:118px;padding:11px;border-radius:15px;display:flex;flex-direction:column;gap:6px;background:' + (isToday ? '#15795A' : '#fff') + ';border:1px solid ' + (isToday ? '#15795A' : '#ece5d5') + ';',
+        cellStyle: 'min-height:118px;min-width:0;overflow:hidden;box-sizing:border-box;padding:11px;border-radius:15px;display:flex;flex-direction:column;gap:6px;background:' + (isToday ? '#15795A' : '#fff') + ';border:1px solid ' + (isToday ? '#15795A' : '#ece5d5') + ';',
         numStyle: "font-family:'Hanken Grotesk';font-size:15px;font-weight:700;color:" + (isToday ? '#fff' : '#2c2820') + ';',
+        tooltip: evs.map(e => this.clean(e.label || e.title, 'Event')).join('\n'),
         events: evs.map((e, i) => {
           const color = colorFor(e);
           return {
             label: this.clean(e.label || e.title, 'Event'),
             key:'e' + d + i,
-            style: "font-size:11.5px;line-height:1.3;padding:4px 8px;border-radius:7px;font-family:'Hanken Grotesk';font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:" + (isToday ? 'rgba(255,255,255,.2)' : color.bg) + ';color:' + (isToday ? '#fff' : color.fg) + ';'
+            style: "max-width:100%;min-width:0;box-sizing:border-box;font-size:11.5px;line-height:1.3;padding:4px 8px;border-radius:7px;font-family:'Hanken Grotesk';font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:help;background:" + (isToday ? 'rgba(255,255,255,.2)' : color.bg) + ';color:' + (isToday ? '#fff' : color.fg) + ';'
           };
         })
       });
@@ -1388,10 +1577,9 @@ class Component extends DCLogic {
     const totalCount = todos.length;
     const pct = totalCount === 0 ? 0 : Math.round(doneCount / totalCount * 100);
     const priColors = { high:'#BE6A42', med:'#C99A3A', medium:'#C99A3A', low:'#9aa089' };
-    const order = ['This week', 'This month', 'Later'];
-    const visibleTodoGroup = (group) => order.includes(group) ? group : 'This week';
+    const order = ['This week', 'This month', 'Long term'];
     const grouped = order.map(g => {
-      const items = todos.filter(t => visibleTodoGroup(t.group || 'This week') === g).map(t => ({
+      const items = todos.filter(t => this.todoTimeGroup(t) === g).map(t => ({
         ...t,
         text: this.clean(t.text || t.title, 'Untitled todo'),
         tag: this.clean(t.tag || t.category, 'Task'),
@@ -1404,7 +1592,8 @@ class Component extends DCLogic {
       return { name:g, count:items.length, items };
     });
 
-    const planCards = (this.state.planItems || []).map(item => this.decoratePlanItem(item));
+    const relatedScheduleItems = [...(this.state.todos || []), ...(this.state.calendarEvents || [])];
+    const planCards = (this.state.planItems || []).map(item => this.decoratePlanItem(item, relatedScheduleItems));
     const documentRows = (this.state.documents || []).map(doc => this.decorateDocument(doc));
     const calendarDate = this.calendarDisplayDate();
     const cells = this.buildCalendar(this.state.calendarEvents || [], calendarDate);
@@ -1433,6 +1622,9 @@ class Component extends DCLogic {
       setDraftFunctionKey: (e) => this.setDraftFunctionKey(e),
       setupMessage: this.state.setupMessage || this.state.apiError,
       documentUploadMessage: this.state.documentUploadMessage,
+      resumeText: this.state.resumeText,
+      setResumeText: (e) => this.setResumeText(e),
+      saveResumeText: () => this.saveResumeText(),
       recordSelectedDocuments: (e) => this.recordSelectedDocuments(e),
       handleDocumentDragOver: (e) => this.handleDocumentDragOver(e),
       handleDocumentDrop: (e) => this.handleDocumentDrop(e),
