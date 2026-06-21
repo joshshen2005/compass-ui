@@ -1416,7 +1416,8 @@ class Component extends DCLogic {
   }
 
   decorateDocument(doc) {
-    const rawType = this.clean(doc.type || doc.fileType || doc.extension || doc.name?.split('.').pop(), 'FILE').toUpperCase();
+    const format = this.clean(doc.format || doc.raw?.format || doc.extension || doc.name?.split('.').pop());
+    const rawType = this.clean(format || doc.type || doc.fileType, 'FILE').toUpperCase();
     const status = this.clean(doc.status, 'recorded').toLowerCase();
     const ok = status.includes('read') || status.includes('complete') || status.includes('processed');
     const uploading = status.includes('uploading');
